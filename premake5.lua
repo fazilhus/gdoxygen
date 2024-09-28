@@ -5,7 +5,7 @@ workspace "GDScript Parser"
 
     location "./"
 
-    --startproject "Core"
+    startproject "Core"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
