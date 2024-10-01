@@ -18,5 +18,8 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	p.construct_file_tree();
+	p.gen_docs();
+
 	std::cout << "[INFO] Creating documentation starting from " << arg << '\n';
 }

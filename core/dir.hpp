@@ -13,7 +13,7 @@ namespace core {
 	class dir {
 		std::filesystem::path path_;
 
-		std::unordered_map<std::string, std::shared_ptr<scene_file>> scene_files_;
+		std::unordered_map<std::string, std::shared_ptr<scene_file>> file_tree_;
 		std::unordered_map<std::string, std::shared_ptr<script_file>> script_files_;
 
 	public:
@@ -28,6 +28,9 @@ namespace core {
 		[[nodiscard]] bool set_path(const std::string& path);
 		[[nodiscard]] bool is_file() const;
 		[[nodiscard]] bool is_dir() const;
+
+		void construct_file_tree();
+		void gen_docs();
 	};
 
 } // core
