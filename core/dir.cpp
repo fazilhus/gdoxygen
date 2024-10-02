@@ -120,6 +120,14 @@ namespace core {
 			out.close();
 		}
 
+		auto obsidian_dir = docs_dir / ".obsidian";
+		std::filesystem::create_directory(obsidian_dir);
+
+		std::ofstream out{ obsidian_dir / "graph.json", std::ios::out | std::ios::binary };
+
+		std::string temp = "{\"colorGroups\":[{\"query\":\"path:scenes\",\"color\":{\"a\":1,\"rgb\":14048348}},{\"query\":\"path:scripts\",\"color\":{\"a\":1,\"rgb\":6577366}}]}";
+		out.write(temp.data(), temp.size());
+		out.close();
 	}
 
 	bool dir::is_ignored(const std::filesystem::path& path) const {
