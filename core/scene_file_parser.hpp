@@ -13,8 +13,7 @@ namespace core {
 
 	class scene_file_parser {
 	public:
-		using field_type = std::pair<std::string, std::string>;
-		using fields_type = std::vector<field_type>;
+		using fields_type = std::unordered_map<std::string, std::string>;
 
 	private:
 		std::filesystem::path root_path_;
@@ -29,8 +28,8 @@ namespace core {
 
 		[[nodiscard]] const fields_type& get_fields() const { return fields_; }
 
-		void parse_scene_header();
-		void parse_scene_ext_resources(
+		bool parse_scene_header();
+		bool parse_scene_ext_resources(
 			const std::unordered_map<std::string, std::shared_ptr<scene_file>>& scene_files,
 			const std::unordered_map<std::string, std::shared_ptr<script_file>>& script_files);
 
@@ -39,6 +38,9 @@ namespace core {
 	private:
 		bool next_entry();
 		bool next_field();
+		bool validate_resource_type();
+		bool validate_resource_packed_scene();
+		bool validate_resource_script();
 	};
 
 } // core
