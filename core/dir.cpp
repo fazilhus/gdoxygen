@@ -83,27 +83,38 @@ namespace core {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
 			doc_path = docs_dir / doc_path;
-			std::filesystem::create_directory(doc_path.parent_path());
+			std::filesystem::create_directories(doc_path.parent_path());
 			doc_path.replace_extension(".md");
 			std::ofstream out{ doc_path, std::ios::out | std::ios::binary };
 
+			out.write("#scene\n", 7);
+
+			out.write("# Resources\n", 12);
+			out.write("## Scenes\n", 10);
 			for (const auto& child : file->get_children()) {
 				auto child_doc_path = std::filesystem::relative(child->get_path(), path_);
 				child_doc_path = docs_dir / child_doc_path;
 				child_doc_path.replace_extension(".md");
 				out.write("[[", 2);
 				auto child_filename = child_doc_path.filename().string();
+				auto child_stem = child_doc_path.stem().string();
 				out.write(child_filename.c_str(), child_filename.size());
+				out.put('|');
+				out.write(child_stem.c_str(), child_stem.size());
 				out.write("]]\n", 3);
 			}
 
+			out.write("## Scripts\n", 11);
 			for (const auto& child : file->get_scripts()) {
 				auto script_doc_path = std::filesystem::relative(child->get_path(), path_);
 				script_doc_path = docs_dir / script_doc_path;
 				script_doc_path.replace_filename(script_doc_path.filename().string() + ".md");
 				out.write("[[", 2);
 				auto script_filename = script_doc_path.filename().string();
+				auto script_stem = script_doc_path.stem().string();
 				out.write(script_filename.c_str(), script_filename.size());
+				out.put('|');
+				out.write(script_stem.c_str(), script_stem.size());
 				out.write("]]\n", 3);
 			}
 
@@ -114,18 +125,20 @@ namespace core {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
 			doc_path = docs_dir / doc_path;
-			std::filesystem::create_directory(doc_path.parent_path());
+			std::filesystem::create_directories(doc_path.parent_path());
 			doc_path.replace_filename(doc_path.filename().string() + ".md");
 			std::ofstream out{ doc_path, std::ios::out | std::ios::binary };
+			out.write("#script\n", 8);
 			out.close();
 		}
 
+		// TODO develop a proper way of item coloring in obsidian
 		auto obsidian_dir = docs_dir / ".obsidian";
 		std::filesystem::create_directory(obsidian_dir);
-
+		
 		std::ofstream out{ obsidian_dir / "graph.json", std::ios::out | std::ios::binary };
-
-		std::string temp = "{\"colorGroups\":[{\"query\":\"path:scenes\",\"color\":{\"a\":1,\"rgb\":14048348}},{\"query\":\"path:scripts\",\"color\":{\"a\":1,\"rgb\":6577366}}]}";
+		
+		std::string temp = "{\"colorGroups\":[{\"query\":\"tag:#scene\",\"color\":{\"a\":1,\"rgb\":14048348}},{\"query\":\"tag:#script\",\"color\":{\"a\":1,\"rgb\":6577366}},{\"query\":\"tag:#resource\",\"color\":{\"a\":1,\"rgb\":4521728}}]}";
 		out.write(temp.data(), temp.size());
 		out.close();
 	}

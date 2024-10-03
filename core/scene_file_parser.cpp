@@ -52,8 +52,8 @@ namespace core {
 				auto& type = fields_["type"];
 				if (type == "PackedScene") {
 					if (!validate_resource_packed_scene()) {
-						std::cerr << "[ERROR] corrupted scene file (invalid external resource \"PackedScene\"): " << file_->get_path() << '\n';
-						return false;
+						std::cerr << "[WARNING] skipping corrupted scene file (invalid external resource \"PackedScene\"): " << file_->get_path() << '\n';
+						continue;
 					}
 
 					auto& uid = fields_["uid"];
@@ -66,8 +66,8 @@ namespace core {
 				}
 				else if (type == "Script") {
 					if (!validate_resource_script()) {
-						std::cerr << "[ERROR] corrupted scene file (invalid external resource \"Script\"): " << file_->get_path() << '\n';
-						return false;
+						std::cerr << "[WARNING] skipping corrupted scene file (invalid external resource \"Script\"): " << file_->get_path() << '\n';
+						continue;
 					}
 
 					std::string path_str = fields_["path"];
