@@ -1,16 +1,11 @@
 #include "file.hpp"
 
-#include <execution>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
 namespace core {
 
 	file::file(const std::filesystem::path& path)
 		: path_(path) {
 		path_.make_preferred();
-		title_ = path_.filename().string();
+		title_ = path_.filename().wstring();
 	}
 
 	file::file(const file& other)

@@ -14,8 +14,8 @@ namespace core {
 		std::filesystem::path path_;
 		std::vector<std::string> ignored_folders_;
 
-		std::unordered_map<std::string, std::shared_ptr<scene_file>> file_tree_;
-		std::unordered_map<std::string, std::shared_ptr<script_file>> script_files_;
+		std::unordered_map<std::wstring, std::shared_ptr<scene_file>> file_tree_;
+		std::unordered_map<std::wstring, std::shared_ptr<script_file>> script_files_;
 
 	public:
 		dir() = default;

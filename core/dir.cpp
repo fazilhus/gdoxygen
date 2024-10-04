@@ -3,7 +3,7 @@
 #include <iostream>
 #include <ranges>
 
-#include "scene_file_parser.hpp"
+#include "scene_parser.hpp"
 
 namespace core {
 	bool dir::set_path(const std::string& path) {
@@ -31,7 +31,7 @@ namespace core {
 			if (util::is_file(*dir_entry)) {
 				if (dir_entry->path().extension() == ".gd" || dir_entry->path().extension() == ".cs") {
 					auto f = script_file(dir_entry->path());
-					script_files_[dir_entry->path().relative_path().string()] = std::make_shared<script_file>(f);
+					script_files_[dir_entry->path().relative_path().wstring()] = std::make_shared<script_file>(f);
 				}
 
 				if (dir_entry->path().extension() == ".tscn") {
@@ -47,28 +47,18 @@ namespace core {
 		}
 
 		for (auto& val : scene_files) {
-			scene_file_parser p{ val };
+			scene_parser p{ val };
 			if (!p.parse_scene_header())
 				return;
 			file_tree_[val->get_uid()] = val;
 		}
 
 		for (auto& val : scene_files) {
-			scene_file_parser p{ val };
+			scene_parser p{ val };
 			p.set_root_path(path_);
 			if (!p.parse_scene_ext_resources(file_tree_, script_files_))
 				return;
 		}
-
-		//for (const auto& val : file_tree_ | std::views::values) {
-		//	std::cout << "scene " << val->get_title() << " uses:\n";
-		//	for (const auto& file : val->get_children()) {
-		//		std::cout << "\tscene " << file->get_title() << '\n';
-		//	}
-		//	for (const auto& file : val->get_scripts()) {
-		//		std::cout << "\tscript " << file->get_title() << '\n';
-		//	}
-		//}
 	}
 
 	void dir::gen_docs() {
