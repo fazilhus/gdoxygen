@@ -53,7 +53,7 @@ namespace docs_gen_core {
 		for (auto& val : scene_files) {
 			parser p{ val };
 			p.set_root_path(path_);
-			if (!p.parse_scene_ext_resources(file_tree_, script_files_))
+			if (!p.parse_scene_ext_resources(file_tree_, script_files_, resource_files_))
 				return;
 		}
 	}
@@ -72,38 +72,32 @@ namespace docs_gen_core {
 			doc_path = docs_dir / doc_path;
 			std::filesystem::create_directories(doc_path.parent_path());
 			doc_path.replace_extension(".md");
-			std::ofstream out{ doc_path, std::ios::out | std::ios::binary };
+			std::wofstream out{ doc_path, std::ios::out | std::ios::binary };
 
-			out.write("#scene\n", 7);
+			out.write(L"#scene\n", 7);
 
-			out.write("# Resources\n", 12);
-			out.write("## Scenes\n", 10);
-			for (const auto& child : file->get_children()) {
+			out.write(L"# External Resources\n", 21);
+			out.write(L"## Scenes\n", 10);
+			for (const auto& [_, child] : file->get_packed_scenes()) {
 				auto child_doc_path = std::filesystem::relative(child->get_path(), path_);
 				child_doc_path = docs_dir / child_doc_path;
 				child_doc_path.replace_extension(".md");
-				out.write("[[", 2);
-				auto child_filename = child_doc_path.filename().string();
-				auto child_stem = child_doc_path.stem().string();
-				out.write(child_filename.c_str(), child_filename.size());
-				out.put('|');
-				out.write(child_stem.c_str(), child_stem.size());
-				out.write("]]\n", 3);
+				auto child_filename = child_doc_path.filename().wstring();
+				auto child_stem = child_doc_path.stem().wstring();
+				write_named_file_link(out, child_filename, child_stem);
 			}
 
-			out.write("## Scripts\n", 11);
-			for (const auto& child : file->get_scripts()) {
+			out.write(L"## Scripts\n", 11);
+			for (const auto& [_, child] : file->get_scripts()) {
 				auto script_doc_path = std::filesystem::relative(child->get_path(), path_);
 				script_doc_path = docs_dir / script_doc_path;
-				script_doc_path.replace_filename(script_doc_path.filename().string() + ".md");
-				out.write("[[", 2);
-				auto script_filename = script_doc_path.filename().string();
-				auto script_stem = script_doc_path.stem().string();
-				out.write(script_filename.c_str(), script_filename.size());
-				out.put('|');
-				out.write(script_stem.c_str(), script_stem.size());
-				out.write("]]\n", 3);
+				script_doc_path.replace_filename(script_doc_path.filename().wstring() + L".md");
+				auto script_filename = script_doc_path.filename().wstring();
+				auto script_stem = script_doc_path.stem().wstring();
+				write_named_file_link(out, script_filename, script_stem);
 			}
+			
+			out.write(L"## Resources\n", 13);
 
 			out.close();
 		}
@@ -147,6 +141,15 @@ namespace docs_gen_core {
 		}
 
 		return false;
+	}
+
+	void dir::write_named_file_link(std::wofstream& out, const std::wstring& file_name,
+		const std::wstring& link_name) {
+		out.write(L"[[", 2);
+		out.write(file_name.c_str(), file_name.size());
+		out.put('|');
+		out.write(link_name.c_str(), link_name.size());
+		out.write(L"]]\n", 3);
 	}
 
 	namespace util {

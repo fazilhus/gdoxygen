@@ -4,7 +4,7 @@
 
 namespace docs_gen_core {
 
-	parser::parser(const std::shared_ptr<scene_file>& file)
+	parser::parser(const std::shared_ptr<file>& file)
 	: file_(file) {
 		in_.open(file_->get_path(), std::ios::in | std::ios::binary);
 		if (!in_.is_open()) {
@@ -15,44 +15,64 @@ namespace docs_gen_core {
 
 	bool parser::parse_scene_header() {
 		next_entry();
-		if (fields_.find(L"gd_scene") == fields_.end()) {
+		if (!validate_scene_header()) {
 			std::cerr << "[ERROR] corrupted scene file: " << file_->get_path() << '\n';
 			return false;
 		}
 
-		if (fields_.find(L"uid") == fields_.end()) {
+		auto file = dynamic_cast<scene_file*>(file_.get());
+		if (!file) {
+			std::cerr << "[ERROR] wrong file type " << file_->get_path() << '\n';
+			return false;
+		}
+		
+		file->set_uid(fields_[L"uid"]);
+		return true;
+	}
+
+	bool parser::parse_resource_header() {
+		next_entry();
+		if (!validate_resource_header()) {
 			std::cerr << "[ERROR] corrupted scene file: " << file_->get_path() << '\n';
 			return false;
 		}
 
-		auto& uid = fields_[L"uid"];
-		if (uid.empty()) {
-			std::cerr << "[ERROR] corrupted scene file: " << file_->get_path() << '\n';
+		auto file = dynamic_cast<resource_file*>(file_.get());
+		if (!file) {
+			std::cerr << "[ERROR] wrong file type " << file_->get_path() << '\n';
 			return false;
 		}
 
-		file_->set_uid(uid);
+		file->set_uid(fields_[L"uid"]);
+		file->set_script_class(fields_[L"script_class"]);
 		return true;
 	}
 
 	bool parser::parse_scene_ext_resources(
 		const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
-		const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files) {
-		std::cout << "---- Processing file " << file_->get_path() << " ----\n";
+		const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
+		const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files) {
+		auto file = dynamic_cast<scene_file*>(file_.get());
+		if (!file) {
+			std::cerr << "[ERROR] wrong file type " << file_->get_path() << '\n';
+			return false;
+		}
+		
+		std::cout << "---- Processing file " << file->get_path() << " ----\n";
 		while (next_entry()) {
 			if (fields_.find(L"gd_scene") == fields_.end() && fields_.find(L"ext_resource") == fields_.end())
 				break;
 
 			if (fields_.find(L"ext_resource") != fields_.end()) {
-				if (!validate_resource_type()) {
-					std::cerr << "[ERROR] corrupted scene file (invalid external resource type): " << file_->get_path() << '\n';
+				if (!validate_ext_resource_type()) {
+					std::cerr << "[ERROR] corrupted scene file (invalid external resource type): " << file->get_path() << '\n';
 					return false;
 				}
 
 				auto& type = fields_[L"type"];
 				if (type == L"PackedScene") {
-					if (!validate_resource_packed_scene()) {
-						std::cerr << "[WARNING] skipping corrupted scene file (invalid external resource \"PackedScene\"): " << file_->get_path() << '\n';
+					if (!validate_ext_resource_packed_scene()) {
+						std::cerr << "[WARNING] corrupted scene file (invalid external resource \"PackedScene\"): " << file->get_path() << '\n';
 						continue;
 					}
 
@@ -64,11 +84,11 @@ namespace docs_gen_core {
 						continue;
 					}
 
-					file_->push_child(scene_files.at(uid));
+					file->push_packed_scene(fields_[L"id"], scene_files.at(uid));
 				}
 				else if (type == L"Script") {
-					if (!validate_resource_script()) {
-						std::cerr << "[WARNING] skipping corrupted scene file (invalid external resource \"Script\"): " << file_->get_path() << '\n';
+					if (!validate_ext_resource_script()) {
+						std::cerr << "[WARNING] corrupted scene file (invalid external resource \"Script\"): " << file->get_path() << '\n';
 						continue;
 					}
 
@@ -83,7 +103,15 @@ namespace docs_gen_core {
 						continue;
 					}
 
-					file_->push_script(script_files.at(path_str));
+					file->push_script(fields_[L"id"], script_files.at(path_str));
+				}
+				else if (type == L"Resource") {
+					if (!validate_ext_resource_resource()) {
+						std::cerr << "[WARNING] corrupted scene file (invalid external resource \"Resource\"): " << file->get_path() << '\n';
+						continue;
+					}
+
+					
 				}
 				else {
 					std::cerr << "[WARNING] external resource of type ";
@@ -166,17 +194,34 @@ namespace docs_gen_core {
 	}
 
 	// TODO think of a more sophisticated validation lul
-	bool parser::validate_resource_type() {
+	bool parser::validate_scene_header() {
+		return fields_.find(L"gd_scene") != fields_.end()
+			&& fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty();
+	}
+
+	bool parser::validate_resource_header() {
+		return fields_.find(L"gd_resource") != fields_.end()
+			&& fields_.find(L"script_class") != fields_.end() && !fields_[L"script_class"].empty()
+			&& fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty();
+	}
+
+	bool parser::validate_ext_resource_type() {
 		return fields_.find(L"type") != fields_.end() && !fields_[L"type"].empty();
 	}
 
-	bool parser::validate_resource_packed_scene() {
+	bool parser::validate_ext_resource_packed_scene() {
 		return fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty()
 			&& fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty() 
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}
 
-	bool parser::validate_resource_script() {
+	bool parser::validate_ext_resource_resource() {
+		return fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty()
+			&& fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty() 
+			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
+	}
+
+	bool parser::validate_ext_resource_script() {
 		return fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty()
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}

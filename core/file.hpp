@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
 
 namespace docs_gen_core {
 
@@ -53,6 +54,7 @@ namespace docs_gen_core {
 
 	class resource_file final : public file {
 		std::wstring uid_;
+		std::wstring script_class_;
 		std::shared_ptr<script_file> script_;
 
 	public:
@@ -65,16 +67,21 @@ namespace docs_gen_core {
 		resource_file& operator=(const resource_file& other);
 		resource_file& operator=(resource_file&& other) noexcept;
 
-		void set_script(const std::shared_ptr<script_file>& script);
+		void set_uid(const std::wstring& s) { uid_ = s; }
+		void set_script_class(const std::wstring& s) { script_class_ = s; }
+		void set_script(const std::shared_ptr<script_file>& script) { script_ = script; }
 
+		[[nodiscard]] const std::wstring& get_uid() const { return uid_; }
+		[[nodiscard]] const std::wstring& get_script_class() const { return script_class_; }
 		[[nodiscard]] const std::shared_ptr<script_file>& get_script() const { return script_; }
 		[[nodiscard]] std::shared_ptr<script_file>& get_script() { return script_; }
 	};
 
 	class scene_file final : public file {
 		std::wstring uid_;
-		std::vector<std::shared_ptr<scene_file>> children_;
-		std::vector<std::shared_ptr<script_file>> scripts_;
+		std::unordered_map<std::wstring, std::shared_ptr<scene_file>> packed_scenes_;
+		std::unordered_map<std::wstring, std::shared_ptr<script_file>> scripts_;
+		std::unordered_map<std::wstring, std::wstring> sub_resources_;
 
 	public:
 		scene_file() = default;
@@ -87,14 +94,17 @@ namespace docs_gen_core {
 		scene_file& operator=(scene_file&& other) noexcept;
 
 		void set_uid(const std::wstring& s) { uid_ = s; }
-		void push_child(const std::shared_ptr<scene_file>& child) { children_.push_back(child); }
-		void push_script(const std::shared_ptr<script_file>& script) { scripts_.push_back(script); }
+		void push_packed_scene(const std::wstring& key, const std::shared_ptr<scene_file>& child);
+		void push_script(const std::wstring& key, const std::shared_ptr<script_file>& script);
+		void push_sub_resource(const std::wstring& key, const std::wstring& sub_resource);
 
 		[[nodiscard]] const std::wstring& get_uid() const { return uid_; }
-		[[nodiscard]] const std::vector<std::shared_ptr<scene_file>>& get_children() const { return children_; }
-		[[nodiscard]] std::vector<std::shared_ptr<scene_file>>& get_children() { return children_; }
-		[[nodiscard]] const std::vector <std::shared_ptr<script_file>>& get_scripts() const { return scripts_; }
-		[[nodiscard]] std::vector <std::shared_ptr<script_file>>& get_scripts() { return scripts_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& get_packed_scenes() const { return packed_scenes_; }
+		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& get_packed_scenes() { return packed_scenes_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() const { return scripts_; }
+		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() { return scripts_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, std::wstring>& get_sub_resources() const { return sub_resources_; }
+		[[nodiscard]] std::unordered_map<std::wstring, std::wstring>& get_sub_resources() { return sub_resources_; }
 	};
 
 	struct scene_file_hash {

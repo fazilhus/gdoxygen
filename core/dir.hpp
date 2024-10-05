@@ -17,6 +17,7 @@ namespace docs_gen_core {
 
 		std::unordered_map<std::wstring, std::shared_ptr<scene_file>> file_tree_;
 		std::unordered_map<std::wstring, std::shared_ptr<script_file>> script_files_;
+		std::unordered_map<std::wstring, std::shared_ptr<resource_file>> resource_files_;
 
 	public:
 		dir() = default;
@@ -36,6 +37,8 @@ namespace docs_gen_core {
 
 	private:
 		[[nodiscard]] bool is_ignored(const std::filesystem::path& path) const;
+
+		void write_named_file_link(std::wofstream& out, const std::wstring& file_name, const std::wstring& link_name);
 	};
 
 	namespace util {
