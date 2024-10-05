@@ -1,7 +1,7 @@
 project "Core"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++latest"
+    cppdialect "C++17"
 
     files {
         "**.hpp",

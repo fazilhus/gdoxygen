@@ -1,11 +1,12 @@
-#pragma once
+#ifndef DOCS_GEN_FILE_H
+#define DOCS_GEN_FILE_H
 
 #include <filesystem>
 #include <vector>
 #include <string>
 #include <memory>
 
-namespace core {
+namespace docs_gen_core {
 
 	class file {
 	protected:
@@ -17,8 +18,11 @@ namespace core {
 		file(const file& other);
 		file(file&& other) noexcept;
 		virtual ~file() = default;
-
+	
 	public:
+		file& operator=(const file&) = delete;
+		file& operator=(file&&) = delete;
+		
 		[[nodiscard]] const std::filesystem::path& get_path() const { return path_; }
 		[[nodiscard]] const std::wstring& get_title() const { return title_; }
 	};
@@ -99,4 +103,6 @@ namespace core {
 		}
 	};
 
-} // core
+} // docs_gen_core
+
+#endif // DOCS_GEN_FILE_H

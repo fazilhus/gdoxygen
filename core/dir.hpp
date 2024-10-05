@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DOCS_GEN_DIR_H
+#define DOCS_GEN_DIR_H
 
 #include <filesystem>
 #include <vector>
@@ -8,11 +9,11 @@
 
 #include "file.hpp"
 
-namespace core {
+namespace docs_gen_core {
 
 	class dir {
 		std::filesystem::path path_;
-		std::vector<std::string> ignored_folders_;
+		std::vector<std::wstring> ignored_folders_;
 
 		std::unordered_map<std::wstring, std::shared_ptr<scene_file>> file_tree_;
 		std::unordered_map<std::wstring, std::shared_ptr<script_file>> script_files_;
@@ -26,9 +27,9 @@ namespace core {
 		dir& operator=(const dir& other) = delete;
 		dir& operator=(dir&& other) = delete;
 
-		[[nodiscard]] bool set_path(const std::string& path);
-		void set_ignored_folders(const std::vector<std::string>& folders) { ignored_folders_ = folders; }
-		void push_ignored_folder(const std::string& folder) { ignored_folders_.push_back(folder); }
+		[[nodiscard]] bool set_path(const std::wstring& path);
+		void set_ignored_folders(const std::vector<std::wstring>& folders) { ignored_folders_ = folders; }
+		void push_ignored_folder(const std::wstring& folder) { ignored_folders_.push_back(folder); }
 
 		void construct_file_tree();
 		void gen_docs();
@@ -39,10 +40,13 @@ namespace core {
 
 	namespace util {
 
-		[[nodiscard]] bool is_valid_path(const std::filesystem::path& path);
-		[[nodiscard]] bool is_file(const std::filesystem::path& path);
-		[[nodiscard]] bool is_dir(const std::filesystem::path& path);
+		bool is_valid_path(const std::filesystem::path& path);
+		bool is_file(const std::filesystem::path& path);
+		bool is_dir(const std::filesystem::path& path);
+		bool is_dir_blacklisted(const std::wstring& dir_name, const std::vector<std::wstring>& ignored);
 
 	} // util
 
-} // core
+} // docs_gen_core
+
+#endif // DOCS_GEN_DIR_H

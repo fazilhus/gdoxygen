@@ -1,17 +1,17 @@
-#pragma once
+#ifndef DOCS_GEN_PARSER_H
+#define DOCS_GEN_PARSER_H
 
 #include <fstream>
 #include <sstream>
-#include <vector>
 #include <string>
 #include <memory>
 #include <unordered_map>
 
 #include "file.hpp"
 
-namespace core {
+namespace docs_gen_core {
 
-	class scene_parser {
+	class parser {
 	public:
 		using fields_type = std::unordered_map<std::wstring, std::wstring>;
 
@@ -24,7 +24,7 @@ namespace core {
 		fields_type fields_;
 
 	public:
-		explicit scene_parser(const std::shared_ptr<scene_file>& file);
+		explicit parser(const std::shared_ptr<scene_file>& file);
 
 		[[nodiscard]] const fields_type& get_fields() const { return fields_; }
 
@@ -43,4 +43,6 @@ namespace core {
 		bool validate_resource_script();
 	};
 
-} // core
+} // docs_gen_core
+
+#endif // DOCS_GEN_PARSER_H

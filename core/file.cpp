@@ -1,6 +1,6 @@
 #include "file.hpp"
 
-namespace core {
+namespace docs_gen_core {
 
 	file::file(const std::filesystem::path& path)
 		: path_(path) {
@@ -108,4 +108,4 @@ namespace core {
 		return *this;
 	}
 
-} // core
+} // docs_gen_core

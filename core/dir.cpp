@@ -1,12 +1,11 @@
 #include "dir.hpp"
 
 #include <iostream>
-#include <ranges>
 
-#include "scene_parser.hpp"
+#include "parser.hpp"
 
-namespace core {
-	bool dir::set_path(const std::string& path) {
+namespace docs_gen_core {
+	bool dir::set_path(const std::wstring& path) {
 		const auto temp = std::filesystem::path(path);
 
 		if (!util::is_valid_path(temp)) {
@@ -21,9 +20,7 @@ namespace core {
 		std::vector<std::shared_ptr<scene_file>> scene_files;
 		std::vector<std::shared_ptr<resource_file>> resource_files;
 		for (auto dir_entry = std::filesystem::recursive_directory_iterator(path_); dir_entry != std::filesystem::recursive_directory_iterator(); ++dir_entry) {
-			//std::cout << *dir_entry << '\n';
-			if (util::is_dir(*dir_entry) && std::ranges::find(ignored_folders_, dir_entry->path().filename()) != ignored_folders_.end()) {
-				//std::cout << "\tignored\n";
+			if (util::is_dir(*dir_entry) && util::is_dir_blacklisted(dir_entry->path().filename().wstring(), ignored_folders_)) {
 				dir_entry.disable_recursion_pending();
 				continue;
 			}
@@ -47,14 +44,14 @@ namespace core {
 		}
 
 		for (auto& val : scene_files) {
-			scene_parser p{ val };
+			parser p{ val };
 			if (!p.parse_scene_header())
 				return;
 			file_tree_[val->get_uid()] = val;
 		}
 
 		for (auto& val : scene_files) {
-			scene_parser p{ val };
+			parser p{ val };
 			p.set_root_path(path_);
 			if (!p.parse_scene_ext_resources(file_tree_, script_files_))
 				return;
@@ -69,7 +66,7 @@ namespace core {
 
 		std::filesystem::create_directory(docs_dir);
 		
-		for (const auto& file : file_tree_ | std::views::values) {
+		for (const auto& [_, file] : file_tree_) {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
 			doc_path = docs_dir / doc_path;
@@ -111,7 +108,7 @@ namespace core {
 			out.close();
 		}
 
-		for (const auto& file : script_files_ | std::views::values) {
+		for (const auto& [_, file] : script_files_) {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
 			doc_path = docs_dir / doc_path;
@@ -128,7 +125,8 @@ namespace core {
 		
 		std::ofstream out{ obsidian_dir / "graph.json", std::ios::out | std::ios::binary };
 		
-		std::string temp = "{\"colorGroups\":[{\"query\":\"tag:#scene\",\"color\":{\"a\":1,\"rgb\":14048348}},{\"query\":\"tag:#script\",\"color\":{\"a\":1,\"rgb\":6577366}},{\"query\":\"tag:#resource\",\"color\":{\"a\":1,\"rgb\":4521728}}]}";
+		std::string temp =
+			R"({"colorGroups":[{"query":"tag:#scene","color":{"a":1,"rgb":14048348}},{"query":"tag:#script","color":{"a":1,"rgb":6577366}},{"query":"tag:#resource","color":{"a":1,"rgb":4521728}}]})";
 		out.write(temp.data(), temp.size());
 		out.close();
 	}
@@ -165,6 +163,15 @@ namespace core {
 			return std::filesystem::is_directory(path);
 		}
 
+		bool is_dir_blacklisted(const std::wstring& dir_name, const std::vector<std::wstring>& ignored) {
+			for (const auto& ignored_name : ignored) {
+				if (dir_name == ignored_name) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
 	} // util
 
-} // core
+} // docs_gen_core

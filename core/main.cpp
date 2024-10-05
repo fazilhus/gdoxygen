@@ -5,22 +5,22 @@
 #include <chrono>
 
 int main(int argc, char** argv) {
-	auto start = std::chrono::high_resolution_clock::now();
-	auto program = core::util::next_arg(&argc, &argv);
+	const auto start = std::chrono::high_resolution_clock::now();
+	const auto _ = docs_gen_core::util::next_arg(&argc, &argv);
 
-	auto path = core::util::next_arg(&argc, &argv);
+	const auto path = docs_gen_core::util::next_arg(&argc, &argv);
 	if (path == nullptr) {
 		std::cerr << "[USAGE] <program> <root of the project>\n";
 		return -1;
 	}
 
-	core::dir p;
+	docs_gen_core::dir p;
 	char* arg;
-	while ((arg = core::util::next_arg(&argc, &argv)) != nullptr) {
-		p.push_ignored_folder(arg);
+	while ((arg = docs_gen_core::util::next_arg(&argc, &argv)) != nullptr) {
+		p.push_ignored_folder(docs_gen_core::util::to_wstring(arg));
 	}
 
-	if (!p.set_path(path)) {
+	if (!p.set_path(docs_gen_core::util::to_wstring(path))) {
 		std::cerr << "[ERROR] invalid path: " << arg << '\n';
 		return -1;
 	}
@@ -30,5 +30,6 @@ int main(int argc, char** argv) {
 
 	std::cout << "[INFO] Creating documentation starting from " << path << '\n';
 	auto stop = std::chrono::high_resolution_clock::now();
-	std::cout << "Time took " << (stop - start) / 1000000000.0f << '\n';
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+	std::cout << "Time took " << static_cast<float>(duration.count()) / 1000000000.0f << " seconds\n";
 }
