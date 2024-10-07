@@ -34,6 +34,10 @@ namespace docs_gen_core {
 			const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 			const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 			const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files);
+		bool parse_resource_ext_resourcces(
+			const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
+			const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
+			const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files);
 
 		void set_root_path(const std::filesystem::path& path) { root_path_ = path; }
 
