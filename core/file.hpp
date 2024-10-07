@@ -106,6 +106,7 @@ namespace docs_gen_core {
 	class scene_file final : public dott_file {
 		std::wstring uid_;
 		std::unordered_map<std::wstring, std::shared_ptr<script_file>> scripts_;
+		std::unordered_map<std::wstring, std::wstring> sub_resources_;
 
 	public:
 		scene_file() = default;
@@ -119,10 +120,13 @@ namespace docs_gen_core {
 
 		void set_uid(const std::wstring& s) { uid_ = s; }
 		void push_script(const std::wstring& key, const std::shared_ptr<script_file>& script);
+		void push_sub_resource(const std::wstring& key, const std::wstring& resource_type);
 
 		[[nodiscard]] const std::wstring& get_uid() const { return uid_; }
 		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() const { return scripts_; }
 		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() { return scripts_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, std::wstring>& get_sub_resources() const { return sub_resources_; }
+		[[nodiscard]] std::unordered_map<std::wstring, std::wstring>& get_sub_resources() { return sub_resources_; }
 	};
 
 	struct scene_file_hash {

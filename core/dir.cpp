@@ -53,7 +53,7 @@ namespace docs_gen_core {
 		for (auto& val : scene_files) {
 			parser p{ val };
 			p.set_root_path(path_);
-			if (!p.parse_scene_ext_resources(file_tree_, script_files_, resource_files_))
+			if (!p.parse_scene_file_contents(file_tree_, script_files_, resource_files_))
 				return;
 		}
 		
@@ -67,7 +67,7 @@ namespace docs_gen_core {
 		for (auto& val : resource_files) {
 			parser p{ val };
 			p.set_root_path(path_);
-			if (!p.parse_resource_ext_resourcces(file_tree_, script_files_, resource_files_))
+			if (!p.parse_resource_file_contents(file_tree_, script_files_, resource_files_))
 				return;
 		}
 	}
@@ -94,32 +94,24 @@ namespace docs_gen_core {
 			out.write(L"# External Resources\n", 21);
 			out.write(L"## Scenes\n", 10);
 			for (const auto& [_, child] : file->get_packed_scenes()) {
-				auto child_doc_path = std::filesystem::relative(child->get_path(), path_);
-				child_doc_path = docs_dir / child_doc_path;
-				child_doc_path.replace_filename(child_doc_path.filename().wstring() + L".md");
-				auto child_filename = child_doc_path.filename().wstring();
-				auto child_stem = child_doc_path.stem().wstring();
-				write_named_file_link(out, child_filename, child_stem);
+				write_named_file_link(out, docs_dir, child->get_path());
 			}
 
 			out.write(L"## Scripts\n", 11);
 			for (const auto& [_, script] : file->get_scripts()) {
-				auto script_doc_path = std::filesystem::relative(script->get_path(), path_);
-				script_doc_path = docs_dir / script_doc_path;
-				script_doc_path.replace_filename(script_doc_path.filename().wstring() + L".md");
-				auto script_filename = script_doc_path.filename().wstring();
-				auto script_stem = script_doc_path.stem().wstring();
-				write_named_file_link(out, script_filename, script_stem);
+				write_named_file_link(out, docs_dir, script->get_path());
 			}
 			
 			out.write(L"## Resources\n", 13);
 			for (const auto& [_, resource] : file->get_resources()) {
-				auto resource_doc_path = std::filesystem::relative(resource->get_path(), path_);
-				resource_doc_path = docs_dir / resource_doc_path;
-				resource_doc_path.replace_filename(resource_doc_path.filename().wstring() + L".md");
-				auto resource_filename = resource_doc_path.filename().wstring();
-				auto resource_stem = resource_doc_path.stem().wstring();
-				write_named_file_link(out, resource_filename, resource_stem);
+				write_named_file_link(out, docs_dir, resource->get_path());
+			}
+
+			out.write(L"### Sub_Resources\n", 18);
+			for (const auto& [_, resource_type] : file->get_sub_resources()) {
+				out.write(L"- ", 2);
+				out.write(resource_type.data(), resource_type.size());
+				out.write(L"\n", 1);
 			}
 
 			out.close();
@@ -137,35 +129,19 @@ namespace docs_gen_core {
 			out.write(L"#resource\n", 10);
 
 			out.write(L"# External Resources\n", 21);
-			out.write(L"## Scenes\n", 10);
-			for (const auto& [_, child] : file->get_packed_scenes()) {
-				auto child_doc_path = std::filesystem::relative(child->get_path(), path_);
-				child_doc_path = docs_dir / child_doc_path;
-				child_doc_path.replace_filename(child_doc_path.filename().wstring() + L".md");
-				auto child_filename = child_doc_path.filename().wstring();
-				auto child_stem = child_doc_path.stem().wstring();
-				write_named_file_link(out, child_filename, child_stem);
-			}
-
 			out.write(L"## Script\n", 10);
 			if (file->get_script() != nullptr) {
-				auto& script = file->get_script();
-				auto script_doc_path = std::filesystem::relative(script->get_path(), path_);
-				script_doc_path = docs_dir / script_doc_path;
-				script_doc_path.replace_filename(script_doc_path.filename().wstring() + L".md");
-				auto script_filename = script_doc_path.filename().wstring();
-				auto script_stem = script_doc_path.stem().wstring();
-				write_named_file_link(out, script_filename, script_stem);
+				write_named_file_link(out, docs_dir, file->get_script()->get_path());
+			}
+			
+			out.write(L"## Scenes\n", 10);
+			for (const auto& [_, child] : file->get_packed_scenes()) {
+				write_named_file_link(out, docs_dir, child->get_path());
 			}
 			
 			out.write(L"## Resources\n", 13);
 			for (const auto& [_, resource] : file->get_resources()) {
-				auto resource_doc_path = std::filesystem::relative(resource->get_path(), path_);
-				resource_doc_path = docs_dir / resource_doc_path;
-				resource_doc_path.replace_filename(resource_doc_path.filename().wstring() + L".md");
-				auto resource_filename = resource_doc_path.filename().wstring();
-				auto resource_stem = resource_doc_path.stem().wstring();
-				write_named_file_link(out, resource_filename, resource_stem);
+				write_named_file_link(out, docs_dir, resource->get_path());
 			}
 			out.close();
 		}
@@ -215,6 +191,20 @@ namespace docs_gen_core {
 	void dir::write_named_file_link(std::wofstream& out, const std::wstring& file_name,
 		const std::wstring& link_name) {
 		out.write(L"[[", 2);
+		out.write(file_name.c_str(), file_name.size());
+		out.put('|');
+		out.write(link_name.c_str(), link_name.size());
+		out.write(L"]]\n", 3);
+	}
+
+	void dir::write_named_file_link(std::wofstream& out, const std::filesystem::path& docs_path,
+		const std::filesystem::path& file_path) {
+		auto doc_path = std::filesystem::relative(file_path, path_);
+		doc_path = docs_path / doc_path;
+		doc_path.replace_filename(doc_path.filename().wstring() + L".md");
+		const auto file_name = doc_path.filename().wstring();
+		const auto link_name = doc_path.stem().wstring();
+		out.write(L"- [[", 4);
 		out.write(file_name.c_str(), file_name.size());
 		out.put('|');
 		out.write(link_name.c_str(), link_name.size());

@@ -173,5 +173,15 @@ namespace docs_gen_core {
 		
 		scripts_[key] = script;
 	}
+
+	void scene_file::push_sub_resource(const std::wstring& key, const std::wstring& resource_type) {
+		if (sub_resources_.find(key) != sub_resources_.end()) {
+			std::cerr << "[WARNING] overwriting external resource Script ";
+			std::wcerr << sub_resources_[key];
+			std::cerr << '\n';
+		}
+		
+		sub_resources_[key] = resource_type;
+	}
 	
 } // docs_gen_core

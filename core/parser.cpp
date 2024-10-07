@@ -48,7 +48,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::parse_scene_ext_resources(
+	bool parser::parse_scene_file_contents(
 		const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files) {
@@ -60,8 +60,8 @@ namespace docs_gen_core {
 		
 		std::cout << "---- Processing scene file " << file->get_path() << " ----\n";
 		while (next_entry()) {
-			if (fields_.find(L"gd_scene") == fields_.end() && fields_.find(L"ext_resource") == fields_.end())
-				break;
+			//if (fields_.find(L"gd_scene") == fields_.end() && fields_.find(L"ext_resource") == fields_.end())
+			//	break;
 
 			if (fields_.find(L"ext_resource") != fields_.end()) {
 				if (!validate_ext_resource_type()) {
@@ -127,12 +127,20 @@ namespace docs_gen_core {
 					std::cerr << " not supported\n";
 				}
 			}
+			else if (fields_.find(L"sub_resource") != fields_.end()) {
+				if (!validate_sub_resource()) {
+					std::cerr << "[WARNING] corrupted scene file (invalid sub_resource): " << file->get_path() << '\n';
+					continue;
+				}
+
+				file->push_sub_resource(fields_[L"id"], fields_[L"type"]);
+			}
 		}
 
 		return true;
 	}
 
-	bool parser::parse_resource_ext_resourcces(
+	bool parser::parse_resource_file_contents(
 		const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files) {
@@ -278,4 +286,10 @@ namespace docs_gen_core {
 		return fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty()
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}
+
+	bool parser::validate_sub_resource() {
+		return fields_.find(L"type") != fields_.end() && !fields_[L"type"].empty()
+			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
+	}
+	
 } // docs_gen_core

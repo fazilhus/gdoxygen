@@ -39,6 +39,8 @@ namespace docs_gen_core {
 		[[nodiscard]] bool is_ignored(const std::filesystem::path& path) const;
 
 		void write_named_file_link(std::wofstream& out, const std::wstring& file_name, const std::wstring& link_name);
+		void write_named_file_link(std::wofstream& out, const std::filesystem::path& docs_path,
+			const std::filesystem::path& file_path);
 	};
 
 	namespace util {

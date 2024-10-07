@@ -30,11 +30,11 @@ namespace docs_gen_core {
 
 		bool parse_scene_header();
 		bool parse_resource_header();
-		bool parse_scene_ext_resources(
+		bool parse_scene_file_contents(
 			const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 			const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 			const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files);
-		bool parse_resource_ext_resourcces(
+		bool parse_resource_file_contents(
 			const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 			const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 			const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files);
@@ -50,6 +50,7 @@ namespace docs_gen_core {
 		bool validate_ext_resource_packed_scene();
 		bool validate_ext_resource_resource();
 		bool validate_ext_resource_script();
+		bool validate_sub_resource();
 	};
 
 } // docs_gen_core
