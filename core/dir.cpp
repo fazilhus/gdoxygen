@@ -114,6 +114,17 @@ namespace docs_gen_core {
 				out.write(L"\n", 1);
 			}
 
+			out.write(L"### Node Tree\n", 14);
+			auto& nodes = file->get_node_tree();
+			for (auto it = nodes.begin(); it != nodes.end(); ++it) {
+				for (std::size_t i = 0; i < (*it)->depth - 1; ++i) {
+					out.write(L"\t", 1);
+				}
+				out.write(L"- ", 2);
+				out.write((*it)->name.data(), (*it)->name.size());
+				out.write(L"\n", 1);
+			}
+
 			out.close();
 		}
 

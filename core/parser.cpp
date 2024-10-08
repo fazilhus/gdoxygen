@@ -135,6 +135,20 @@ namespace docs_gen_core {
 
 				file->push_sub_resource(fields_[L"id"], fields_[L"type"]);
 			}
+			else if (fields_.find(L"node") != fields_.end()) {
+				if (fields_.find(L"type") != fields_.end()) {
+					file->get_node_tree().insert({fields_[L"name"], fields_[L"type"], fields_[L"parent"]});
+				}
+				else if (fields_.find(L"instance") != fields_.end()) {
+					auto& instance = fields_[L"instance"];
+					if (file->get_packed_scenes().find(instance) != file->get_packed_scenes().end()) {
+						file->get_node_tree().insert({fields_[L"name"], L"PackedScene", fields_[L"parent"]});
+					}
+				}
+				else {
+					file->get_node_tree().insert({fields_[L"name"], L"Unknown", fields_[L"parent"]});
+				}
+			}
 		}
 
 		return true;
@@ -245,8 +259,11 @@ namespace docs_gen_core {
 			if (lhs == L"path") {
 				rhs = rhs.substr(7, rhs.size() - 8);
 			}
-			if (lhs == L"id" || lhs == L"type") {
+			if (lhs == L"id" || lhs == L"type" || lhs == L"parent" || lhs == L"name") {
 				rhs = rhs.substr(1, rhs.size() - 2);
+			}
+			if (lhs == L"instance") {
+				rhs = rhs.substr(13, rhs.size() - 15);
 			}
 			fields_[lhs] = rhs;
 		}
@@ -262,7 +279,6 @@ namespace docs_gen_core {
 
 	bool parser::validate_resource_header() {
 		return fields_.find(L"gd_resource") != fields_.end()
-			//&& fields_.find(L"script_class") != fields_.end() && !fields_[L"script_class"].empty()
 			&& fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty();
 	}
 
@@ -290,6 +306,12 @@ namespace docs_gen_core {
 	bool parser::validate_sub_resource() {
 		return fields_.find(L"type") != fields_.end() && !fields_[L"type"].empty()
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
+	}
+
+	bool parser::validate_node() {
+		return fields_.find(L"name") != fields_.end() && !fields_[L"name"].empty()
+			&& (fields_.find(L"type") != fields_.end() && !fields_[L"type"].empty()
+			|| fields_.find(L"instance") != fields_.end() && !fields_[L"instance"].empty());
 	}
 	
 } // docs_gen_core

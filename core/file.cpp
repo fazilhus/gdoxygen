@@ -132,11 +132,11 @@ namespace docs_gen_core {
 	}
 
 	scene_file::scene_file(const scene_file& other)
-		: dott_file(other), uid_(other.uid_), scripts_(other.scripts_) {
+		: dott_file(other), uid_(other.uid_), scripts_(other.scripts_), node_tree_(other.node_tree_) {
 	}
 
 	scene_file::scene_file(scene_file&& other) noexcept
-		: uid_(std::move(other.uid_)) {
+		: uid_(std::move(other.uid_)), node_tree_(std::move(other.node_tree_)) {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
@@ -147,20 +147,22 @@ namespace docs_gen_core {
 	scene_file& scene_file::operator=(const scene_file& other) {
 		path_ = other.path_;
 		title_ = other.title_;
-		uid_ = other.uid_;
 		packed_scenes_ = other.packed_scenes_;
 		resources_ = other.resources_;
 		scripts_ = other.scripts_;
+		uid_ = other.uid_;
+		node_tree_ = other.node_tree_;
 		return *this;
 	}
 
 	scene_file& scene_file::operator=(scene_file&& other) noexcept {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
-		uid_ = std::move(other.uid_);
 		packed_scenes_ = std::move(other.packed_scenes_);
 		resources_ = std::move(other.resources_);
 		scripts_ = std::move(other.scripts_);
+		uid_ = std::move(other.uid_);
+		node_tree_ = std::move(other.node_tree_);
 		return *this;
 	}
 

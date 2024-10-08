@@ -1,5 +1,5 @@
-project "Core"
-    kind "StaticLib"
+project "NodeTreeTest"
+    kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
     staticruntime "off"
@@ -11,6 +11,10 @@ project "Core"
 
     targetdir ("%{wks.location}/build/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/build/obj/" .. outputdir .. "/%{prj.name}")
+
+    links { "Core" }
+
+    includedirs { "../../core" }
 
     filter { "system:windows" }
         defines { "WIN" }

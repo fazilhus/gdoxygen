@@ -7,6 +7,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "node.hpp"
+
 namespace docs_gen_core {
 
 	class file {
@@ -107,6 +109,7 @@ namespace docs_gen_core {
 		std::wstring uid_;
 		std::unordered_map<std::wstring, std::shared_ptr<script_file>> scripts_;
 		std::unordered_map<std::wstring, std::wstring> sub_resources_;
+		node_tree node_tree_;
 
 	public:
 		scene_file() = default;
@@ -127,6 +130,8 @@ namespace docs_gen_core {
 		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() { return scripts_; }
 		[[nodiscard]] const std::unordered_map<std::wstring, std::wstring>& get_sub_resources() const { return sub_resources_; }
 		[[nodiscard]] std::unordered_map<std::wstring, std::wstring>& get_sub_resources() { return sub_resources_; }
+		[[nodiscard]] const node_tree& get_node_tree() const { return node_tree_; }
+		[[nodiscard]] node_tree& get_node_tree() { return node_tree_; }
 	};
 
 	struct scene_file_hash {
