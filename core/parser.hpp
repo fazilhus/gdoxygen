@@ -44,6 +44,8 @@ namespace docs_gen_core {
 	private:
 		bool next_entry();
 		bool next_field();
+		// TODO reimagine entry parsing (to make node fields parsing possible)
+		
 		bool validate_scene_header();
 		bool validate_resource_header();
 		bool validate_ext_resource_type();
