@@ -172,7 +172,7 @@ namespace docs_gen_core {
 			auto& type = fields_[L"type"];
 			if (type == L"Script") {
 				if (!validate_ext_resource_script()) {
-					std::cerr << "[WARNING] corrupted scene file (invalid external resource \"Script\"): " << file->get_path() << '\n';
+					std::cerr << "[WARNING] corrupted resource file (invalid external resource \"Script\"): " << file->get_path() << '\n';
 					continue;
 				}
 
@@ -188,6 +188,22 @@ namespace docs_gen_core {
 				}
 				
 				file->set_script(script_files.at(path_str));
+			}
+			else if (type == L"Resource") {
+				if (!validate_ext_resource_resource()) {
+					std::cerr << "[WARNING] corrupted resource file (invalid external resource \"Resource\"): " << file->get_path() << '\n';
+					continue;
+				}
+
+				auto& uid = fields_[L"uid"];
+				if (resource_files.find(uid) == resource_files.end()) {
+					std::cerr << "[WARNING] previously not encountered resource file: ";
+					std::wcerr << fields_[L"path"];
+					std::cerr << '\n';
+					continue;
+				}
+
+				file->push_resource(fields_[L"id"], resource_files.at(uid));
 			}
 			else {
 				std::cerr << "[WARNING] external resource of type ";

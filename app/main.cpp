@@ -27,8 +27,7 @@ int main(int argc, char** argv) {
 
 	p.construct_file_tree();
 	p.gen_docs();
-
-	std::cout << "[INFO] Creating documentation starting from " << path << '\n';
+	
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
 	std::cout << "Time took " << static_cast<float>(duration.count()) / 1000000000.0f << " seconds\n";
