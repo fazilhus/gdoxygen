@@ -199,15 +199,6 @@ namespace docs_gen_core {
 		return false;
 	}
 
-	void dir::write_named_file_link(std::wofstream& out, const std::wstring& file_name,
-		const std::wstring& link_name) {
-		out.write(L"[[", 2);
-		out.write(file_name.c_str(), file_name.size());
-		out.put('|');
-		out.write(link_name.c_str(), link_name.size());
-		out.write(L"]]\n", 3);
-	}
-
 	void dir::write_named_file_link(std::wofstream& out, const std::filesystem::path& docs_path,
 		const std::filesystem::path& file_path) {
 		auto doc_path = std::filesystem::relative(file_path, path_);
@@ -215,11 +206,11 @@ namespace docs_gen_core {
 		doc_path.replace_filename(doc_path.filename().wstring() + L".md");
 		const auto file_name = doc_path.filename().wstring();
 		const auto link_name = doc_path.stem().wstring();
-		out.write(L"- [[", 4);
-		out.write(file_name.c_str(), file_name.size());
-		out.put('|');
+		out.write(L"- [", 3);
 		out.write(link_name.c_str(), link_name.size());
-		out.write(L"]]\n", 3);
+		out.write(L"](", 2);
+		out.write(file_name.c_str(), file_name.size());
+		out.write(L")\n", 2);
 	}
 
 	namespace util {
