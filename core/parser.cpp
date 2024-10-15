@@ -119,7 +119,7 @@ namespace docs_gen_core {
 						continue;
 					}
 
-					file->push_resource(fields_[L"id"], resource_files.at(uid));
+					file->push_ext_resource(fields_[L"id"], resource_files.at(uid));
 				}
 				else {
 					std::cerr << "[WARNING] external resource of type ";
@@ -136,17 +136,45 @@ namespace docs_gen_core {
 				file->push_sub_resource(fields_[L"id"], fields_[L"type"]);
 			}
 			else if (fields_.find(L"node") != fields_.end()) {
+				auto tn = file->get_node_tree().end();
+				
 				if (fields_.find(L"type") != fields_.end()) {
-					file->get_node_tree().insert({fields_[L"name"], fields_[L"type"], fields_[L"parent"]});
+					tn = file->get_node_tree().insert(fields_[L"name"], fields_[L"type"], fields_[L"parent"]);
 				}
 				else if (fields_.find(L"instance") != fields_.end()) {
 					auto& instance = fields_[L"instance"];
 					if (file->get_packed_scenes().find(instance) != file->get_packed_scenes().end()) {
-						file->get_node_tree().insert({fields_[L"name"], L"PackedScene", fields_[L"parent"]});
+						tn = file->get_node_tree().insert(fields_[L"name"], L"PackedScene", fields_[L"parent"]);
 					}
 				}
 				else {
-					file->get_node_tree().insert({fields_[L"name"], L"Unknown", fields_[L"parent"]});
+					tn = file->get_node_tree().insert(fields_[L"name"], L"Unknown", fields_[L"parent"]);
+				}
+
+				if (tn != file->get_node_tree().end()) {
+					while (next_node_field()) {
+						auto second = node_field_.second;
+						if (second.find(L"ExtResource") == std::string::npos)
+							continue;
+						
+						second = second.substr(13, second.size() - 15);
+						const auto& sf =  file->get_packed_scenes().find(second);
+						if (sf != file->get_packed_scenes().end()) {
+							(*tn)->fields.emplace_back(node_field_.first, sf->second);
+							continue;
+						}
+
+						const auto& scf = file->get_scripts().find(second);
+						if (scf != file->get_scripts().end()) {
+							(*tn)->fields.emplace_back(node_field_.first, scf->second);
+							continue;
+						}
+
+						const auto& rf = file->get_ext_resources().find(second);
+						if (rf != file->get_ext_resources().end()) {
+							(*tn)->fields.emplace_back(node_field_.first, rf->second);
+						}
+					}
 				}
 			}
 		}
@@ -203,7 +231,7 @@ namespace docs_gen_core {
 					continue;
 				}
 
-				file->push_resource(fields_[L"id"], resource_files.at(uid));
+				file->push_ext_resource(fields_[L"id"], resource_files.at(uid));
 			}
 			else {
 				std::cerr << "[WARNING] external resource of type ";
@@ -283,6 +311,28 @@ namespace docs_gen_core {
 			}
 			fields_[lhs] = rhs;
 		}
+
+		return true;
+	}
+
+	bool parser::next_node_field() {
+		if (in_.eof() || in_.bad())
+			return false;
+
+		wchar_t c;
+		while (in_.get(c) && c != '\n') {}
+		
+		std::wstring temp;
+		std::getline(in_, temp);
+
+		if (temp.empty())
+			return false;
+
+		auto del = temp.find_first_of('=');
+		if (del == std::string::npos)
+			return false;
+
+		node_field_ = {temp.substr(0, del - 1), temp.substr(del + 2)};
 
 		return true;
 	}

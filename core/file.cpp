@@ -47,10 +47,10 @@ namespace docs_gen_core {
 	}
 
 	dott_file::dott_file(const dott_file& other)
-		: file(other), packed_scenes_(other.packed_scenes_), resources_(other.resources_) {}
+		: file(other), packed_scenes_(other.packed_scenes_), ext_resources_(other.ext_resources_) {}
 
 	dott_file::dott_file(dott_file&& other) noexcept
-		: packed_scenes_(std::move(other.packed_scenes_)), resources_(std::move(other.resources_)) {
+		: packed_scenes_(std::move(other.packed_scenes_)), ext_resources_(std::move(other.ext_resources_)) {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 	}
@@ -59,7 +59,7 @@ namespace docs_gen_core {
 		path_ = other.path_;
 		title_ = other.title_;
 		packed_scenes_ = other.packed_scenes_;
-		resources_ = other.resources_;
+		ext_resources_ = other.ext_resources_;
 		return *this;
 	}
 
@@ -67,7 +67,7 @@ namespace docs_gen_core {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
-		resources_ = std::move(other.resources_);
+		ext_resources_ = std::move(other.ext_resources_);
 		return *this;
 	}
 
@@ -81,14 +81,14 @@ namespace docs_gen_core {
 		packed_scenes_[key] = child;
 	}
 
-	void dott_file::push_resource(const std::wstring& key, const std::shared_ptr<resource_file>& resource) {
-		if (resources_.find(key) != resources_.end()) {
+	void dott_file::push_ext_resource(const std::wstring& key, const std::shared_ptr<resource_file>& resource) {
+		if (ext_resources_.find(key) != ext_resources_.end()) {
 			std::cerr << "[WARNING] overwriting external resource Script ";
-			std::wcerr << resources_[key];
+			std::wcerr << ext_resources_[key];
 			std::cerr << '\n';
 		}
 		
-		resources_[key] = resource;
+		ext_resources_[key] = resource;
 	}
 
 	resource_file::resource_file(const std::filesystem::path& path)
@@ -104,7 +104,7 @@ namespace docs_gen_core {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
-		resources_ = std::move(other.resources_);
+		ext_resources_ = std::move(other.ext_resources_);
 		script_ = std::move(other.script_);
 	}
 
@@ -113,7 +113,7 @@ namespace docs_gen_core {
 		title_ = other.title_;
 		uid_ = other.uid_;
 		packed_scenes_ = other.packed_scenes_;
-		resources_ = other.resources_;
+		ext_resources_ = other.ext_resources_;
 		script_ = other.script_;
 		return *this;
 	}
@@ -122,7 +122,7 @@ namespace docs_gen_core {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
-		resources_ = std::move(other.resources_);
+		ext_resources_ = std::move(other.ext_resources_);
 		script_ = std::move(other.script_);
 		return *this;
 	}
@@ -140,7 +140,7 @@ namespace docs_gen_core {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
-		resources_ = std::move(other.resources_);
+		ext_resources_ = std::move(other.ext_resources_);
 		scripts_ = std::move(other.scripts_);
 	}
 
@@ -148,7 +148,7 @@ namespace docs_gen_core {
 		path_ = other.path_;
 		title_ = other.title_;
 		packed_scenes_ = other.packed_scenes_;
-		resources_ = other.resources_;
+		ext_resources_ = other.ext_resources_;
 		scripts_ = other.scripts_;
 		uid_ = other.uid_;
 		node_tree_ = other.node_tree_;
@@ -159,7 +159,7 @@ namespace docs_gen_core {
 		path_ = std::move(other.path_);
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
-		resources_ = std::move(other.resources_);
+		ext_resources_ = std::move(other.ext_resources_);
 		scripts_ = std::move(other.scripts_);
 		uid_ = std::move(other.uid_);
 		node_tree_ = std::move(other.node_tree_);

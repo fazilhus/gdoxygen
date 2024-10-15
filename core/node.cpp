@@ -3,34 +3,6 @@
 #include <iostream>
 
 namespace docs_gen_core {
-    node::node(const std::wstring& name, const std::wstring& type)
-        : name_(name), type_(type) {}
-
-    node::node(const std::wstring& name, const std::wstring& type, const std::wstring& parent)
-        : name_(name), type_(type), parent_(parent) {
-    }
-
-    node::node(const node& other)
-        : name_(other.name_), type_(other.type_), parent_(other.parent_) {
-    }
-
-    node::node(node&& other) noexcept
-        : name_(std::move(other.name_)), type_(std::move(other.type_)), parent_(std::move(other.parent_)) {
-    }
-
-    node& node::operator=(const node& other) {
-        name_ = other.name_;
-        type_ = other.type_;
-        parent_ = other.parent_;
-        return *this;
-    }
-
-    node& node::operator=(node&& other) noexcept {
-        name_ = std::move(other.name_);
-        type_ = std::move(other.type_);
-        parent_ = std::move(other.parent_);
-        return *this;
-    }
 
     node_tree::tree_node::tree_node(const std::wstring& name, const std::wstring& type)
         : name(name), type(type), depth(0), parent({}) {
@@ -97,39 +69,42 @@ namespace docs_gen_core {
         return {};
     }
 
-    bool node_tree::insert(const node& node) {
-        auto& parent = node.get_parent();
+    node_tree::iterator node_tree::insert(const std::wstring& name, const std::wstring& type) {
+        return insert(name, type, {});
+    }
+
+    node_tree::iterator node_tree::insert(const std::wstring& name, const std::wstring& type, const std::wstring& parent) {
         if (parent.empty()) {
             if (root_ != nullptr) {
                 std::cerr << "[ERROR] Root node of the scene already exists\n";
-                return false;
+                return end();
             }
 
-            root_ = std::make_shared<tree_node>(node.get_name(), node.get_type());
-            root_->path = node.get_name();
+            root_ = std::make_shared<tree_node>(name, type);
+            root_->path = name;
             root_->depth = 1;
-            return true;
+            return iterator(root_);
         }
         
         if (parent == L".") {
-            const auto tn = std::make_shared<tree_node>(node.get_name(), node.get_type(), root_);
-            tn->path = root_->path / std::filesystem::path(node.get_name());
+            const auto tn = std::make_shared<tree_node>(name, type, root_);
+            tn->path = root_->path / std::filesystem::path(name);
             tn->depth = 2;
             root_->children.push_back(tn);
-            return true;
+            return iterator(tn);
         }
         
-        const auto& parent_path = root_->path / std::filesystem::path(node.get_parent()).make_preferred();
+        const auto& parent_path = root_->path / std::filesystem::path(parent).make_preferred();
         for (auto it = begin(); it != end(); ++it) {
             if (parent_path.compare((*it)->path) == 0) {
-                const auto tn = std::make_shared<tree_node>(node.get_name(), node.get_type(), *it);
-                tn->path = parent_path / std::filesystem::path(node.get_name());
+                const auto tn = std::make_shared<tree_node>(name, type, *it);
+                tn->path = parent_path / std::filesystem::path(name);
                 tn->depth = (*it)->depth + 1;
                 (*it)->children.push_back(tn);
-                return true;
+                return iterator(tn);
             }
         }
-        return false;
+        return end();
     }
 
     node_tree::iterator::iterator()

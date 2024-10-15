@@ -9,26 +9,8 @@
 
 namespace docs_gen_core {
 
-    class node {
-        std::wstring name_;
-        std::wstring type_;
-        std::wstring parent_;
-
-    public:
-        node(const std::wstring& name, const std::wstring& type);
-        node(const std::wstring& name, const std::wstring& type, const std::wstring& parent);
-        node(const node& other);
-        node(node&& other) noexcept;
-        ~node() = default;
-
-        node& operator=(const node& other);
-        node& operator=(node&& other) noexcept;
-
-        [[nodiscard]] const std::wstring& get_name() const { return name_; }
-        [[nodiscard]] const std::wstring& get_type() const { return type_; }
-        [[nodiscard]] const std::wstring& get_parent() const { return parent_; }
-    };
-
+    class file;
+    
     class node_tree {
     public:
         class iterator;
@@ -41,6 +23,7 @@ namespace docs_gen_core {
             std::size_t depth;
             std::weak_ptr<tree_node> parent;
             std::vector<std::shared_ptr<tree_node>> children;
+            std::vector<std::pair<std::wstring, std::weak_ptr<file>>> fields;
 
             tree_node(const std::wstring& name, const std::wstring& type);
             tree_node(const std::wstring& name, const std::wstring& type, const std::weak_ptr<tree_node>& parent);
@@ -67,7 +50,8 @@ namespace docs_gen_core {
         iterator begin();
         iterator end();
         
-        bool insert(const node& node);
+        iterator insert(const std::wstring& name, const std::wstring& type);
+        iterator insert(const std::wstring& name, const std::wstring& type, const std::wstring& parent);
 
         // TODO implement const_iterator
         class iterator {

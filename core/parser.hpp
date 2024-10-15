@@ -22,6 +22,7 @@ namespace docs_gen_core {
 		std::wifstream in_;
 		std::wistringstream iss_;
 		fields_type fields_;
+		std::pair<std::wstring, std::wstring> node_field_;
 
 	public:
 		explicit parser(const std::shared_ptr<file>& file);
@@ -45,6 +46,7 @@ namespace docs_gen_core {
 		bool next_entry();
 		bool next_field();
 		// TODO reimagine entry parsing (to make node fields parsing possible)
+		bool next_node_field();
 		
 		bool validate_scene_header();
 		bool validate_resource_header();
