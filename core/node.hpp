@@ -23,7 +23,8 @@ namespace docs_gen_core {
             std::size_t depth;
             std::weak_ptr<tree_node> parent;
             std::vector<std::shared_ptr<tree_node>> children;
-            std::vector<std::pair<std::wstring, std::weak_ptr<file>>> fields;
+            std::vector<std::pair<std::wstring, std::weak_ptr<file>>> ext_resource_fields;
+            std::vector<std::pair<std::wstring, std::wstring>> sub_resource_fields;
 
             tree_node(const std::wstring& name, const std::wstring& type);
             tree_node(const std::wstring& name, const std::wstring& type, const std::weak_ptr<tree_node>& parent);

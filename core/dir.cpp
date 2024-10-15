@@ -127,17 +127,27 @@ namespace docs_gen_core {
 				out.write((*it)->name.data(), (*it)->name.size());
 				out.put('\n');
 				
-				for (const auto& [f, s] : (*it)->fields) {
-					if (s.expired())
-						continue;
-					
+				for (const auto& [f, s] : (*it)->ext_resource_fields) {
+					if (!s.expired()) {
+						for (std::size_t i = 0; i < (*it)->depth; ++i) {
+							out.put('\t');
+						}
+						out.write(L"  *", 3);
+						out.write(f.c_str(), f.size());
+						out.write(L"*: ", 3);
+						write_named_file_link(out, docs_dir, s.lock()->get_path());
+						out.put('\n');
+					}
+				}
+
+				for (const auto& [f, s] : (*it)->sub_resource_fields) {
 					for (std::size_t i = 0; i < (*it)->depth; ++i) {
 						out.put('\t');
 					}
-					out.write(L"- ", 2);
+					out.write(L"  *", 3);
 					out.write(f.c_str(), f.size());
-					out.write(L": ", 2);
-					write_named_file_link(out, docs_dir, s.lock()->get_path());
+					out.write(L"*: ", 3);
+					out.write(s.data(), s.size());
 					out.put('\n');
 				}
 			}

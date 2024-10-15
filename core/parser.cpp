@@ -154,25 +154,31 @@ namespace docs_gen_core {
 				if (tn != file->get_node_tree().end()) {
 					while (next_node_field()) {
 						auto second = node_field_.second;
-						if (second.find(L"ExtResource") == std::string::npos)
-							continue;
-						
-						second = second.substr(13, second.size() - 15);
-						const auto& sf =  file->get_packed_scenes().find(second);
-						if (sf != file->get_packed_scenes().end()) {
-							(*tn)->fields.emplace_back(node_field_.first, sf->second);
-							continue;
-						}
+						if (second.find(L"ExtResource") != std::string::npos) {						
+							second = second.substr(13, second.size() - 15);
+							const auto& sf =  file->get_packed_scenes().find(second);
+							if (sf != file->get_packed_scenes().end()) {
+								(*tn)->ext_resource_fields.emplace_back(node_field_.first, sf->second);
+								continue;
+							}
 
-						const auto& scf = file->get_scripts().find(second);
-						if (scf != file->get_scripts().end()) {
-							(*tn)->fields.emplace_back(node_field_.first, scf->second);
-							continue;
-						}
+							const auto& scf = file->get_scripts().find(second);
+							if (scf != file->get_scripts().end()) {
+								(*tn)->ext_resource_fields.emplace_back(node_field_.first, scf->second);
+								continue;
+							}
 
-						const auto& rf = file->get_ext_resources().find(second);
-						if (rf != file->get_ext_resources().end()) {
-							(*tn)->fields.emplace_back(node_field_.first, rf->second);
+							const auto& rf = file->get_ext_resources().find(second);
+							if (rf != file->get_ext_resources().end()) {
+								(*tn)->ext_resource_fields.emplace_back(node_field_.first, rf->second);
+							}
+						}
+						else if (second.find(L"SubResource") != std::string::npos) {
+							second = second.substr(13, second.size() - 15);
+							const auto& sr = file->get_sub_resources().find(second);
+							if (sr != file->get_sub_resources().end()) {
+								(*tn)->sub_resource_fields.emplace_back(node_field_.first, sr->second);
+							}
 						}
 					}
 				}
@@ -271,6 +277,8 @@ namespace docs_gen_core {
 		while (next_field()) {
 		}
 
+		while (in_.get(c) && c != '\n') {}
+
 		return true;
 	}
 
@@ -318,9 +326,6 @@ namespace docs_gen_core {
 	bool parser::next_node_field() {
 		if (in_.eof() || in_.bad())
 			return false;
-
-		wchar_t c;
-		while (in_.get(c) && c != '\n') {}
 		
 		std::wstring temp;
 		std::getline(in_, temp);
