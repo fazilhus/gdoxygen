@@ -44,28 +44,28 @@ namespace docs_gen_core {
 		}
 
 		for (auto& val : scene_files) {
-			parser p{ val };
+			dott_parser p{ val };
 			if (!p.parse_scene_header())
 				return;
 			file_tree_[val->get_uid()] = val;
 		}
 
 		for (auto& val : scene_files) {
-			parser p{ val };
+			dott_parser p{ val };
 			p.set_root_path(path_);
 			if (!p.parse_scene_file_contents(file_tree_, script_files_, resource_files_))
 				return;
 		}
 		
 		for (auto& val : resource_files) {
-			parser p{ val };
+			dott_parser p{ val };
 			if (!p.parse_resource_header())
 				return;
 			resource_files_[val->get_uid()] = val;
 		}
 
 		for (auto& val : resource_files) {
-			parser p{ val };
+			dott_parser p{ val };
 			p.set_root_path(path_);
 			if (!p.parse_resource_file_contents(file_tree_, script_files_, resource_files_))
 				return;

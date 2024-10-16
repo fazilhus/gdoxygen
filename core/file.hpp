@@ -30,15 +30,28 @@ namespace docs_gen_core {
 		[[nodiscard]] const std::wstring& get_title() const { return title_; }
 	};
 
-	struct code_snippet {
-		std::streampos comment_start_pos;
-		std::streampos comment_length;
-		std::streampos code_start_pos;
-		std::streampos code_length;
+	struct script_class {
+		struct variable {
+			std::wstring name;
+			std::wstring type;
+			std::wstring short_desc;
+		};
+		
+		struct function {
+			std::wstring declaration;
+			std::wstring short_desc;
+		};
+		
+		bool is_public;
+		std::wstring name;
+		std::wstring parent;
+		std::wstring short_desc;
+		std::vector<variable> variables;
+		std::vector<function> functions;
 	};
 
 	class script_file final : public file {
-		std::vector<code_snippet> code_snippets_;
+		script_class class_;
 		
 	public:
 		script_file() = default;
@@ -50,8 +63,8 @@ namespace docs_gen_core {
 		script_file& operator=(const script_file& other);
 		script_file& operator=(script_file&& other) noexcept;
 
-		void push_code_snippet(const code_snippet& snippet) { code_snippets_.push_back(snippet); }
-		[[nodiscard]] const std::vector<code_snippet>& get_code_snippets() const { return code_snippets_; }
+		void set_script_class(const script_class& c) { class_ = c; }
+		[[nodiscard]] const script_class& get_script_class() const { return class_; }
 	};
 
 	class scene_file;

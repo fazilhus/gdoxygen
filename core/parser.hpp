@@ -11,13 +11,13 @@
 
 namespace docs_gen_core {
 
-	class parser {
+	class dott_parser {
 	public:
 		using fields_type = std::unordered_map<std::wstring, std::wstring>;
 
 	private:
 		std::filesystem::path root_path_;
-		std::shared_ptr<file> file_;
+		std::shared_ptr<dott_file> file_;
 
 		std::wifstream in_;
 		std::wistringstream iss_;
@@ -25,7 +25,7 @@ namespace docs_gen_core {
 		std::pair<std::wstring, std::wstring> node_field_;
 
 	public:
-		explicit parser(const std::shared_ptr<file>& file);
+		explicit dott_parser(const std::shared_ptr<dott_file>& file);
 
 		[[nodiscard]] const fields_type& get_fields() const { return fields_; }
 
@@ -45,7 +45,6 @@ namespace docs_gen_core {
 	private:
 		bool next_entry();
 		bool next_field();
-		// TODO reimagine entry parsing (to make node fields parsing possible)
 		bool next_node_field();
 		
 		bool validate_scene_header();
@@ -56,6 +55,15 @@ namespace docs_gen_core {
 		bool validate_ext_resource_script();
 		bool validate_ext_resource_other();
 		bool validate_node();
+	};
+
+	class script_parser {
+		std::shared_ptr<script_file> file_;
+		std::wifstream in_;
+
+	public:
+		explicit script_parser(const std::shared_ptr<script_file>& file);
+		bool parse();
 	};
 
 } // docs_gen_core

@@ -4,7 +4,7 @@
 
 namespace docs_gen_core {
 
-	parser::parser(const std::shared_ptr<file>& file)
+	dott_parser::dott_parser(const std::shared_ptr<dott_file>& file)
 	: file_(file) {
 		in_.open(file_->get_path(), std::ios::in | std::ios::binary);
 		if (!in_.is_open()) {
@@ -13,7 +13,7 @@ namespace docs_gen_core {
 		}
 	}
 
-	bool parser::parse_scene_header() {
+	bool dott_parser::parse_scene_header() {
 		next_entry();
 		if (!validate_scene_header()) {
 			std::cerr << "[ERROR] corrupted scene file: " << file_->get_path() << '\n';
@@ -30,7 +30,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::parse_resource_header() {
+	bool dott_parser::parse_resource_header() {
 		next_entry();
 		if (!validate_resource_header()) {
 			std::cerr << "[ERROR] corrupted resource file: " << file_->get_path() << '\n';
@@ -48,7 +48,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::parse_scene_file_contents(
+	bool dott_parser::parse_scene_file_contents(
 		const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files) {
@@ -173,7 +173,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::parse_resource_file_contents(
+	bool dott_parser::parse_resource_file_contents(
 		const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& scene_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& script_files,
 		const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& resource_files) {
@@ -237,7 +237,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::next_entry() {
+	bool dott_parser::next_entry() {
 		if (in_.eof() || in_.bad())
 			return false;
 
@@ -270,7 +270,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::next_field() {
+	bool dott_parser::next_field() {
 		if (iss_.eof())
 			return false;
 
@@ -311,7 +311,7 @@ namespace docs_gen_core {
 		return true;
 	}
 
-	bool parser::next_node_field() {
+	bool dott_parser::next_node_field() {
 		if (in_.eof() || in_.bad())
 			return false;
 		
@@ -331,46 +331,61 @@ namespace docs_gen_core {
 	}
 
 	// TODO think of a more sophisticated validation lul
-	bool parser::validate_scene_header() {
+	bool dott_parser::validate_scene_header() {
 		return fields_.find(L"gd_scene") != fields_.end()
 			&& fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty();
 	}
 
-	bool parser::validate_resource_header() {
+	bool dott_parser::validate_resource_header() {
 		return fields_.find(L"gd_resource") != fields_.end()
 			&& fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty();
 	}
 
-	bool parser::validate_ext_resource_type() {
+	bool dott_parser::validate_ext_resource_type() {
 		return fields_.find(L"type") != fields_.end() && !fields_[L"type"].empty();
 	}
 
-	bool parser::validate_ext_resource_packed_scene() {
+	bool dott_parser::validate_ext_resource_packed_scene() {
 		return fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty()
 			&& fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty() 
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}
 
-	bool parser::validate_ext_resource_resource() {
+	bool dott_parser::validate_ext_resource_resource() {
 		return fields_.find(L"uid") != fields_.end() && !fields_[L"uid"].empty()
 			&& fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty() 
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}
 
-	bool parser::validate_ext_resource_script() {
+	bool dott_parser::validate_ext_resource_script() {
 		return fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty()
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}
 
-	bool parser::validate_ext_resource_other() {
+	bool dott_parser::validate_ext_resource_other() {
 		return fields_.find(L"path") != fields_.end() && !fields_[L"path"].empty()
 			&& fields_.find(L"id") != fields_.end() && !fields_[L"id"].empty();
 	}
 
-	bool parser::validate_node() {
+	bool dott_parser::validate_node() {
 		return fields_.find(L"name") != fields_.end() && !fields_[L"name"].empty()
 			&& (fields_.find(L"type") != fields_.end() && !fields_[L"type"].empty()
 			|| fields_.find(L"instance") != fields_.end() && !fields_[L"instance"].empty());
+	}
+
+	script_parser::script_parser(const std::shared_ptr<script_file>& file)
+		: file_(file) {
+		in_.open(file_->get_path(), std::ios::in | std::ios::binary);
+		if (!in_.is_open()) {
+			std::cerr << "[ERROR] could not open file: " << file_->get_path() << '\n';
+			return;
+		}
+	}
+
+	bool script_parser::parse() {
+		std::wstring line;
+		while (std::getline(in_, line)) {
+		}
 	}
 	
 } // docs_gen_core
