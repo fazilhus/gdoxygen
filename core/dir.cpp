@@ -91,33 +91,7 @@ namespace docs_gen_core {
 
 			out.write(L"#scene\n", 7);
 
-			out.write(L"# External Resources\n", 21);
-			out.write(L"## Scenes\n", 10);
-			for (const auto& [_, child] : file->get_packed_scenes()) {
-				out.write(L"- ", 2);
-				write_named_file_link(out, docs_dir, child->get_path());
-			}
-
-			out.write(L"## Scripts\n", 11);
-			for (const auto& [_, script] : file->get_scripts()) {
-				out.write(L"- ", 2);
-				write_named_file_link(out, docs_dir, script->get_path());
-			}
-			
-			out.write(L"## Resources\n", 13);
-			for (const auto& [_, resource] : file->get_ext_resources()) {
-				out.write(L"- ", 2);
-				write_named_file_link(out, docs_dir, resource->get_path());
-			}
-
-			out.write(L"### Sub_Resources\n", 18);
-			for (const auto& [_, resource_type] : file->get_sub_resources()) {
-				out.write(L"- ", 2);
-				out.write(resource_type.data(), resource_type.size());
-				out.put('\n');
-			}
-
-			out.write(L"### Node Tree\n", 14);
+			out.write(L"# Node Tree\n", 12);
 			auto& nodes = file->get_node_tree();
 			for (auto it = nodes.begin(); it != nodes.end(); ++it) {
 				for (std::size_t i = 0; i < (*it)->depth - 1; ++i) {
@@ -140,17 +114,46 @@ namespace docs_gen_core {
 					}
 				}
 
-				for (const auto& [f, s] : (*it)->sub_resource_fields) {
-					for (std::size_t i = 0; i < (*it)->depth; ++i) {
-						out.put('\t');
-					}
-					out.write(L"  *", 3);
-					out.write(f.c_str(), f.size());
-					out.write(L"*: ", 3);
-					out.write(s.data(), s.size());
-					out.put('\n');
-				}
+				//for (const auto& [f, s] : (*it)->sub_resource_fields) {
+				//	for (std::size_t i = 0; i < (*it)->depth; ++i) {
+				//		out.put('\t');
+				//	}
+				//	out.write(L"  *", 3);
+				//	out.write(f.c_str(), f.size());
+				//	out.write(L"*: ", 3);
+				//	out.write(s.data(), s.size());
+				//	out.put('\n');
+				//}
 			}
+
+			out.write(L"# External Resources\n", 21);
+			out.write(L"## Scenes\n", 10);
+			for (const auto& [_, child] : file->get_packed_scenes()) {
+				out.write(L"- ", 2);
+				write_named_file_link(out, docs_dir, child->get_path());
+				out.put('\n');
+			}
+
+			out.write(L"## Scripts\n", 11);
+			for (const auto& [_, script] : file->get_scripts()) {
+				out.write(L"- ", 2);
+				write_named_file_link(out, docs_dir, script->get_path());
+				out.put('\n');
+			}
+			
+			out.write(L"## Resources\n", 13);
+			for (const auto& [_, resource] : file->get_ext_resources()) {
+				out.write(L"- ", 2);
+				write_named_file_link(out, docs_dir, resource->get_path());
+				out.put('\n');
+			}
+
+			//out.write(L"### Sub_Resources\n", 18);
+			//for (const auto& [_, resource_type] : file->get_sub_resources()) {
+			//	out.write(L"- ", 2);
+			//	out.write(resource_type.data(), resource_type.size());
+			//	out.put('\n');
+			//}
 
 			out.close();
 		}
@@ -171,18 +174,21 @@ namespace docs_gen_core {
 			if (file->get_script() != nullptr) {
 				out.write(L"- ", 2);
 				write_named_file_link(out, docs_dir, file->get_script()->get_path());
+				out.put('\n');
 			}
 			
 			out.write(L"## Scenes\n", 10);
 			for (const auto& [_, child] : file->get_packed_scenes()) {
 				out.write(L"- ", 2);
 				write_named_file_link(out, docs_dir, child->get_path());
+				out.put('\n');
 			}
 			
 			out.write(L"## Resources\n", 13);
 			for (const auto& [_, resource] : file->get_ext_resources()) {
 				out.write(L"- ", 2);
 				write_named_file_link(out, docs_dir, resource->get_path());
+				out.put('\n');
 			}
 			out.close();
 		}
@@ -240,7 +246,7 @@ namespace docs_gen_core {
 		out.write(link_name.c_str(), link_name.size());
 		out.write(L"](", 2);
 		out.write(file_name.c_str(), file_name.size());
-		out.write(L")\n", 2);
+		out.put(')');
 	}
 
 	namespace util {
