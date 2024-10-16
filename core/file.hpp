@@ -57,14 +57,26 @@ namespace docs_gen_core {
 	class scene_file;
 	class resource_file;
 
-	//struct other_ext_resource {
-	//	
-	//};
+	struct ext_resource_other {
+		std::wstring type;
+		std::filesystem::path path;
+		std::wstring name;
+
+		ext_resource_other() = default;
+		ext_resource_other(const std::wstring& type, const std::filesystem::path& path);
+		ext_resource_other(const ext_resource_other&) = default;
+		ext_resource_other(ext_resource_other&&) noexcept = default;
+		~ext_resource_other() = default;
+
+		ext_resource_other& operator=(const ext_resource_other&) = default;
+		ext_resource_other& operator=(ext_resource_other&&) noexcept = default;
+	};
 
 	class dott_file : public file {
 	protected:
 		std::unordered_map<std::wstring, std::shared_ptr<scene_file>> packed_scenes_;
 		std::unordered_map<std::wstring, std::shared_ptr<resource_file>> ext_resources_;
+		std::unordered_map<std::wstring, ext_resource_other> ext_resources_other_;
 
 		dott_file() = default;
 		explicit dott_file(const std::filesystem::path& path);
@@ -78,11 +90,14 @@ namespace docs_gen_core {
 	public:
 		void push_packed_scene(const std::wstring& key, const std::shared_ptr<scene_file>& child);
 		void push_ext_resource(const std::wstring& key, const std::shared_ptr<resource_file>& resource);
+		void push_ext_resource_other(const std::wstring& key, const ext_resource_other& resource);
 
 		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& get_packed_scenes() const { return packed_scenes_; }
 		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<scene_file>>& get_packed_scenes() { return packed_scenes_; }
 		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& get_ext_resources() const { return ext_resources_; }
 		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<resource_file>>& get_ext_resources() { return ext_resources_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, ext_resource_other>& get_ext_resource_other() const { return ext_resources_other_; }
+		[[nodiscard]] std::unordered_map<std::wstring, ext_resource_other>& get_ext_resource_other() { return ext_resources_other_; }
 	};
 
 	class resource_file final : public dott_file {
@@ -112,7 +127,6 @@ namespace docs_gen_core {
 	class scene_file final : public dott_file {
 		std::wstring uid_;
 		std::unordered_map<std::wstring, std::shared_ptr<script_file>> scripts_;
-		std::unordered_map<std::wstring, std::wstring> sub_resources_;
 		node_tree node_tree_;
 
 	public:
@@ -127,13 +141,10 @@ namespace docs_gen_core {
 
 		void set_uid(const std::wstring& s) { uid_ = s; }
 		void push_script(const std::wstring& key, const std::shared_ptr<script_file>& script);
-		void push_sub_resource(const std::wstring& key, const std::wstring& resource_type);
 
 		[[nodiscard]] const std::wstring& get_uid() const { return uid_; }
 		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() const { return scripts_; }
 		[[nodiscard]] std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() { return scripts_; }
-		[[nodiscard]] const std::unordered_map<std::wstring, std::wstring>& get_sub_resources() const { return sub_resources_; }
-		[[nodiscard]] std::unordered_map<std::wstring, std::wstring>& get_sub_resources() { return sub_resources_; }
 		[[nodiscard]] const node_tree& get_node_tree() const { return node_tree_; }
 		[[nodiscard]] node_tree& get_node_tree() { return node_tree_; }
 	};

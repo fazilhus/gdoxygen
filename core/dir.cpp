@@ -113,17 +113,6 @@ namespace docs_gen_core {
 						out.put('\n');
 					}
 				}
-
-				//for (const auto& [f, s] : (*it)->sub_resource_fields) {
-				//	for (std::size_t i = 0; i < (*it)->depth; ++i) {
-				//		out.put('\t');
-				//	}
-				//	out.write(L"  *", 3);
-				//	out.write(f.c_str(), f.size());
-				//	out.write(L"*: ", 3);
-				//	out.write(s.data(), s.size());
-				//	out.put('\n');
-				//}
 			}
 
 			out.write(L"# External Resources\n", 21);
@@ -147,13 +136,13 @@ namespace docs_gen_core {
 				write_named_file_link(out, docs_dir, resource->get_path());
 				out.put('\n');
 			}
-
-			//out.write(L"### Sub_Resources\n", 18);
-			//for (const auto& [_, resource_type] : file->get_sub_resources()) {
-			//	out.write(L"- ", 2);
-			//	out.write(resource_type.data(), resource_type.size());
-			//	out.put('\n');
-			//}
+			for (const auto& [_, resource] : file->get_ext_resource_other()) {
+				out.write(L"- ", 2);
+				out.write(resource.name.data(), resource.name.size());
+				out.write(L": ", 2);
+				out.write(resource.type.data(), resource.type.size());
+				out.put('\n');
+			}
 
 			out.close();
 		}
@@ -190,6 +179,14 @@ namespace docs_gen_core {
 				write_named_file_link(out, docs_dir, resource->get_path());
 				out.put('\n');
 			}
+			for (const auto& [_, resource] : file->get_ext_resource_other()) {
+				out.write(L"- ", 2);
+				out.write(resource.name.data(), resource.name.size());
+				out.write(L": ", 2);
+				out.write(resource.type.data(), resource.type.size());
+				out.put('\n');
+			}
+			
 			out.close();
 		}
 

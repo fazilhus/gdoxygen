@@ -22,5 +22,6 @@ project "Core"
     filter {}
 
     filter { "configurations:Release" }
+        defines { "RELEASE" }
         optimize "On"
     filter {}

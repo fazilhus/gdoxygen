@@ -54,7 +54,7 @@ namespace docs_gen_core {
 		bool validate_ext_resource_packed_scene();
 		bool validate_ext_resource_resource();
 		bool validate_ext_resource_script();
-		bool validate_sub_resource();
+		bool validate_ext_resource_other();
 		bool validate_node();
 	};
 

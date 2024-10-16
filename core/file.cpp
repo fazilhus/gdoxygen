@@ -42,6 +42,11 @@ namespace docs_gen_core {
 		return *this;
 	}
 
+	ext_resource_other::ext_resource_other(const std::wstring& type, const std::filesystem::path& path)
+		: type(type), path(path) {
+		name = path.filename().wstring();
+	}
+
 	dott_file::dott_file(const std::filesystem::path& path)
 		: file(path) {
 	}
@@ -83,12 +88,23 @@ namespace docs_gen_core {
 
 	void dott_file::push_ext_resource(const std::wstring& key, const std::shared_ptr<resource_file>& resource) {
 		if (ext_resources_.find(key) != ext_resources_.end()) {
-			std::cerr << "[WARNING] overwriting external resource Script ";
+			std::cerr << "[WARNING] overwriting external resource Resource ";
 			std::wcerr << ext_resources_[key];
 			std::cerr << '\n';
 		}
 		
 		ext_resources_[key] = resource;
+	}
+
+	void dott_file::push_ext_resource_other(const std::wstring& key, const ext_resource_other& resource) {
+		if (ext_resources_other_.find(key) != ext_resources_other_.end()) {
+			const auto& res = ext_resources_other_[key];
+			std::cerr << "[WARNING] overwriting external resource ";
+			std::wcerr << res.type << ' ' << res.name;
+			std::cerr << '\n';
+		}
+		
+		ext_resources_other_[key] = resource;
 	}
 
 	resource_file::resource_file(const std::filesystem::path& path)
@@ -174,16 +190,6 @@ namespace docs_gen_core {
 		}
 		
 		scripts_[key] = script;
-	}
-
-	void scene_file::push_sub_resource(const std::wstring& key, const std::wstring& resource_type) {
-		if (sub_resources_.find(key) != sub_resources_.end()) {
-			std::cerr << "[WARNING] overwriting external resource Script ";
-			std::wcerr << sub_resources_[key];
-			std::cerr << '\n';
-		}
-		
-		sub_resources_[key] = resource_type;
 	}
 	
 } // docs_gen_core
