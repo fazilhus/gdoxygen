@@ -114,9 +114,35 @@ namespace docs_gen_core {
 	};
 
 	class resource_file final : public dott_file {
+	public:
+		struct resource {
+			struct field {
+				std::wstring name;
+				std::wstring value;
+			};
+			struct sub_res_field {
+				std::wstring name;
+				std::weak_ptr<resource> field;
+			};
+			struct ext_res_field {
+				std::wstring name;
+				std::weak_ptr<file> file;
+			};
+
+			std::wstring type;
+			std::vector<ext_res_field> res_file_fields;
+			std::vector<field> res_other_fields;
+			std::vector<sub_res_field> sub_res_fields;
+			std::vector<field> fields;
+		};
+
+	private:
 		std::wstring uid_;
 		std::wstring script_class_;
-		std::shared_ptr<script_file> script_;
+		std::unordered_map<std::wstring, std::shared_ptr<script_file>> scripts_;
+
+		std::unordered_map<std::wstring, std::shared_ptr<resource>> sub_resources_;
+		resource resource_;
 
 	public:
 		resource_file() = default;
@@ -130,11 +156,15 @@ namespace docs_gen_core {
 
 		void set_uid(const std::wstring& s) { uid_ = s; }
 		void set_script_class(const std::wstring& s) { script_class_ = s; }
-		void set_script(const std::shared_ptr<script_file>& s) { script_ = s; }
+		void push_script(const std::wstring& key, const std::shared_ptr<script_file>& s);
+		void push_sub_resource(const std::wstring& key, const std::shared_ptr<resource>& resource);
+		void set_resource(const resource& resource) { resource_ = resource; }
 
 		[[nodiscard]] const std::wstring& get_uid() const { return uid_; }
 		[[nodiscard]] const std::wstring& get_script_class() const { return script_class_; }
-		[[nodiscard]] const std::shared_ptr<script_file>& get_script() const { return script_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<script_file>>& get_scripts() const { return scripts_; }
+		[[nodiscard]] const std::unordered_map<std::wstring, std::shared_ptr<resource>>& get_sub_resources() const { return sub_resources_; }
+		[[nodiscard]] const resource& get_resource() const { return resource_; }
 	};
 
 	class scene_file final : public dott_file {

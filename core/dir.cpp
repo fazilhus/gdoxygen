@@ -157,12 +157,13 @@ namespace docs_gen_core {
 			std::wofstream out{ doc_path, std::ios::out | std::ios::binary };
 
 			out.write(L"#resource\n", 10);
+			write_tres_resource(out, file, docs_dir);
 
 			out.write(L"# External Resources\n", 21);
-			out.write(L"## Script\n", 10);
-			if (file->get_script() != nullptr) {
+			out.write(L"## Scripts\n", 11);
+			for (const auto& [_, script] : file->get_scripts()) {
 				out.write(L"- ", 2);
-				write_named_file_link(out, docs_dir, file->get_script()->get_path());
+				write_named_file_link(out, docs_dir, script->get_path());
 				out.put('\n');
 			}
 			
@@ -244,6 +245,91 @@ namespace docs_gen_core {
 		out.write(L"](", 2);
 		out.write(file_name.c_str(), file_name.size());
 		out.put(')');
+	}
+
+	void dir::write_tres_resource(std::wofstream& out, const std::weak_ptr<resource_file>& file, const std::filesystem::path& docs_path) const {
+		if (file.expired()) return;
+		const auto& f = file.lock();
+		
+		out.write(L"# Using\n", 8);
+		write_tres_resource_(out, docs_path, f->get_resource());
+
+		out.write(L"## Sub_Resources\n", 17);
+		for (const auto& [_, res] : f->get_sub_resources()) {
+			write_tres_resource_(out, docs_path, *res.get(), true);
+		}
+	}
+
+	void dir::write_tres_resource_(std::wofstream& out, const std::filesystem::path& docs_path,
+		const resource_file::resource& res, bool sub_res) const {
+		if (sub_res) {
+			out.write(res.type.data(), res.type.size());
+			out.put('\n');
+		}
+		for (const auto& [name, ext_res] : res.res_file_fields) {
+			if (sub_res) {
+				out.write(L"\t- ", 3);
+			}
+			else {
+				out.write(L"- ", 2);
+			}
+			out.write(name.data(), name.size());
+			out.write(L": ", 2);
+
+			if (ext_res.expired()) {
+				out.write(L"Unknown file\n", 13);
+			}
+			else {
+				write_named_file_link(out, docs_path, ext_res.lock()->get_path());
+				out.put('\n');
+			}
+		}
+		
+		for (const auto& [name, ext_other_res] : res.res_other_fields) {
+			if (sub_res) {
+				out.write(L"\t- ", 3);
+			}
+			else {
+				out.write(L"- ", 2);
+			}
+			out.write(name.data(), name.size());
+			out.write(L": ", 2);
+			out.write(ext_other_res.data(), ext_other_res.size());
+			out.put('\n');
+		}
+
+		for (const auto& [name, ext_res] : res.sub_res_fields) {
+			if (sub_res) {
+				out.write(L"\t- ", 3);
+			}
+			else {
+				out.write(L"- ", 2);
+			}
+			out.write(name.data(), name.size());
+			out.write(L": ", 2);
+
+			if (ext_res.expired()) {
+				out.write(L"Unknown sub_resource\n", 13);
+			}
+			else {
+				const auto& r = ext_res.lock();
+				out.write(r->type.data(), r->type.size());
+				out.put('\n');
+			}
+		}
+
+		for (const auto& [name, val] : res.fields) {
+			if (sub_res) {
+				out.write(L"\t- ", 3);
+			}
+			else {
+				out.write(L"- ", 2);
+			}
+			out.write(name.data(), name.size());
+			out.write(L": ", 2);
+			out.write(val.data(), val.size());
+			out.put('\n');
+		}
 	}
 
 	namespace util {

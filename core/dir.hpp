@@ -40,6 +40,10 @@ namespace docs_gen_core {
 		
 		void write_named_file_link(std::wofstream& out, const std::filesystem::path& docs_path,
 			const std::filesystem::path& file_path) const;
+		void write_tres_resource(std::wofstream& out, const std::weak_ptr<resource_file>& file,
+			const std::filesystem::path& docs_path) const;
+		void write_tres_resource_(std::wofstream& out, const std::filesystem::path& docs_path,
+			const resource_file::resource& res, bool sub_res = false) const;
 	};
 
 	namespace util {

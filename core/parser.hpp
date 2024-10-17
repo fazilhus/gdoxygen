@@ -23,6 +23,7 @@ namespace docs_gen_core {
 		std::wistringstream iss_;
 		fields_type fields_;
 		std::pair<std::wstring, std::wstring> node_field_;
+		std::pair<std::wstring, std::wstring> res_field_;
 
 	public:
 		explicit dott_parser(const std::shared_ptr<dott_file>& file);
@@ -46,6 +47,7 @@ namespace docs_gen_core {
 		bool next_entry();
 		bool next_field();
 		bool next_node_field();
+		bool next_resource_field();
 		
 		bool validate_scene_header();
 		bool validate_resource_header();
@@ -54,6 +56,7 @@ namespace docs_gen_core {
 		bool validate_ext_resource_resource();
 		bool validate_ext_resource_script();
 		bool validate_ext_resource_other();
+		bool validate_sub_resource();
 		bool validate_node();
 	};
 
@@ -63,7 +66,7 @@ namespace docs_gen_core {
 
 	public:
 		explicit script_parser(const std::shared_ptr<script_file>& file);
-		bool parse();
+		//bool parse();
 	};
 
 } // docs_gen_core

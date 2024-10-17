@@ -112,7 +112,7 @@ namespace docs_gen_core {
 	}
 
 	resource_file::resource_file(const resource_file& other)
-		: dott_file(other), uid_(other.uid_), script_(other.script_) {
+		: dott_file(other), uid_(other.uid_), scripts_(other.scripts_) {
 	}
 
 	resource_file::resource_file(resource_file&& other) noexcept
@@ -121,7 +121,7 @@ namespace docs_gen_core {
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
 		ext_resources_ = std::move(other.ext_resources_);
-		script_ = std::move(other.script_);
+		scripts_ = std::move(other.scripts_);
 	}
 
 	resource_file& resource_file::operator=(const resource_file& other) {
@@ -130,7 +130,7 @@ namespace docs_gen_core {
 		uid_ = other.uid_;
 		packed_scenes_ = other.packed_scenes_;
 		ext_resources_ = other.ext_resources_;
-		script_ = other.script_;
+		scripts_ = other.scripts_;
 		return *this;
 	}
 
@@ -139,8 +139,28 @@ namespace docs_gen_core {
 		title_ = std::move(other.title_);
 		packed_scenes_ = std::move(other.packed_scenes_);
 		ext_resources_ = std::move(other.ext_resources_);
-		script_ = std::move(other.script_);
+		scripts_ = std::move(other.scripts_);
 		return *this;
+	}
+
+	void resource_file::push_script(const std::wstring& key, const std::shared_ptr<script_file>& s) {
+		if (scripts_.find(key) != scripts_.end()) {
+			std::cerr << "[WARNING] overwriting external resource Script ";
+			std::wcerr << scripts_[key]->get_path();
+			std::cerr << '\n';
+		}
+		
+		scripts_[key] = s;
+	}
+
+	void resource_file::push_sub_resource(const std::wstring& key, const std::shared_ptr<resource>& resource) {
+		if (sub_resources_.find(key) != sub_resources_.end()) {
+			std::cerr << "[WARNING] overwriting sub_resource ";
+			std::wcerr << resource->type;
+			std::cerr << '\n';
+		}
+		
+		sub_resources_[key] = resource;
 	}
 
 	scene_file::scene_file(const std::filesystem::path& path)
