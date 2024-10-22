@@ -17,7 +17,11 @@ int main(int argc, char** argv) {
 	docs_gen_core::dir p;
 	char* arg;
 	while ((arg = docs_gen_core::util::next_arg(&argc, &argv)) != nullptr) {
-		p.push_ignored_folder(docs_gen_core::util::to_wstring(arg));
+		auto str = docs_gen_core::util::to_wstring(arg);
+		if (str.front() == '"' && str.back() == '"') {
+			str = str.substr(1, str.size() - 2);
+		}
+		p.push_ignored_folder(str);
 	}
 
 	if (!p.set_path(docs_gen_core::util::to_wstring(path))) {
