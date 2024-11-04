@@ -66,7 +66,14 @@ namespace docs_gen_core {
 
 	public:
 		explicit script_parser(const std::shared_ptr<script_file>& file);
-		//bool parse();
+		bool parse();
+
+	private:
+		std::wstring extract_category_name(const std::wstring& s);
+		void extract_and_push_tags(const std::wstring& s, std::vector<std::wstring>& tags);
+		script_class::variable extract_variable(const std::wstring& s);
+		script_class::function extract_function(const std::wstring& s);
+		std::size_t extract_and_push_function_arguments(const std::wstring& s, std::size_t args_start, std::vector<script_class::variable>& vars);
 	};
 
 } // docs_gen_core

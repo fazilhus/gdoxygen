@@ -36,17 +36,25 @@ namespace docs_gen_core {
 			std::wstring type;
 			std::wstring short_desc;
 		};
+
+		struct export_category {
+			std::wstring name;
+			std::vector<variable> variables;
+		};
 		
 		struct function {
-			std::wstring declaration;
+			std::wstring name;
 			std::wstring short_desc;
+			std::vector<variable> arguments;
+			std::wstring return_type;
 		};
 		
 		bool is_public;
 		std::wstring name;
 		std::wstring parent;
+		std::vector<std::wstring> tags;
 		std::wstring short_desc;
-		std::vector<variable> variables;
+		std::vector<export_category> categories;
 		std::vector<function> functions;
 	};
 
@@ -64,6 +72,7 @@ namespace docs_gen_core {
 		script_file& operator=(script_file&& other) noexcept;
 
 		void set_script_class(const script_class& c) { class_ = c; }
+		void set_script_class(script_class&& c) { class_ = std::move(c); }
 		[[nodiscard]] const script_class& get_script_class() const { return class_; }
 	};
 

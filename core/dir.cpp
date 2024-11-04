@@ -26,7 +26,7 @@ namespace docs_gen_core {
 			}
 
 			if (util::is_file(*dir_entry)) {
-				if (dir_entry->path().extension() == ".gd" || dir_entry->path().extension() == ".cs") {
+				if (dir_entry->path().extension() == ".gd"/* || dir_entry->path().extension() == ".cs"*/) {
 					auto f = script_file(dir_entry->path());
 					script_files_[dir_entry->path().relative_path().wstring()] = std::make_shared<script_file>(f);
 				}
@@ -69,6 +69,11 @@ namespace docs_gen_core {
 			p.set_root_path(path_);
 			if (!p.parse_resource_file_contents(file_tree_, script_files_, resource_files_))
 				return;
+		}
+
+		for (auto& [_, val] : script_files_) {
+			script_parser p{ val };
+			p.parse();
 		}
 	}
 
@@ -198,8 +203,84 @@ namespace docs_gen_core {
 			doc_path = docs_dir / doc_path;
 			std::filesystem::create_directories(doc_path.parent_path());
 			doc_path.replace_filename(doc_path.filename().string() + ".md");
-			std::ofstream out{ doc_path, std::ios::out | std::ios::binary };
-			out.write("#script\n", 8);
+			std::wofstream out{ doc_path, std::ios::out | std::ios::binary };
+			
+			const auto& sc = file->get_script_class();
+
+			out.write(L"#script", 7);
+			for (const auto& tag : sc.tags) {
+				out.write(L" #", 2);
+				out.write(tag.data(), tag.size());
+			}
+			out.put('\n');
+			
+			out.write(L"## Extends ", 11);
+			out.write(sc.parent.data(), sc.parent.size());
+			out.put('\n');
+
+			out.write(L"## Class ", 9);
+			out.write(sc.name.data(), sc.name.size());
+			out.put('\n');
+
+			if (!sc.short_desc.empty()) {
+				out.put('\t');
+				out.write(sc.short_desc.data(), sc.short_desc.size());
+				out.put('\n');
+			}
+
+			out.write(L"## Variables\n", 13);
+			for (const auto& cat : sc.categories) {
+				if (!cat.name.empty()) {
+					out.write(L"- ", 2);
+					out.write(L"### ", 4);
+					out.write(cat.name.data(), cat.name.size());
+					out.put('\n');
+				}
+				else {
+					out.write(L"- ", 2);
+					out.write(L"### Default Export Group\n", 25);
+				}
+				
+				for (const auto& var : cat.variables) {
+					out.put('\t');
+					out.write(L"- ", 2);
+					out.write(var.name.data(), var.name.size());
+					out.write(L" : ", 3);
+					out.write(var.type.data(), var.type.size());
+					out.put('\n');
+
+					if (!var.short_desc.empty()) {
+						out.write(L"\t\t", 2);
+						out.write(var.short_desc.data(), var.short_desc.size());
+						out.put('\n');
+					}
+				}
+			}
+
+			out.write(L"## Functions\n", 13);
+			for (const auto& func : sc.functions) {
+				out.write(L"- ", 2);
+				out.write(func.name.data(), func.name.size());
+				out.put('\n');
+
+				if (!func.short_desc.empty()) {
+					out.put('\t');
+					out.write(func.short_desc.data(), func.short_desc.size());
+					out.put('\n');
+				}
+				
+				out.write(L"\tArguments\n", 11);
+				for (const auto& arg : func.arguments) {
+					out.write(L"\t- ", 3);
+					out.write(arg.name.data(), arg.name.size());
+					out.write(L" : ", 3);
+					out.write(arg.type.data(), arg.type.size());
+					out.put('\n');
+				}
+				out.write(L"\tReturn type: ", 14);
+				out.write(func.return_type.data(), func.return_type.size());
+				out.put('\n');
+			}
 			out.close();
 		}
 

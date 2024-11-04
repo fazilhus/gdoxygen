@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "util/util.hpp"
+
 namespace docs_gen_core {
 
 	dott_parser::dott_parser(const std::shared_ptr<dott_file>& file)
@@ -497,10 +499,179 @@ namespace docs_gen_core {
 		}
 	}
 
-	//bool script_parser::parse() {
-	//	std::wstring line;
-	//	while (std::getline(in_, line)) {
-	//	}
-	//}
-	
+	bool script_parser::parse() {
+		std::wstring line;
+		script_class sc{};
+		while (std::getline(in_, line)) {
+			if (line.empty())
+				continue;
+
+			if (line.find(L"extends") != std::string::npos) {
+				sc.parent = line.substr(8);
+				continue;
+			}
+
+			if (line.find(L"#CLASS") != std::string::npos) {
+				sc.short_desc = line.substr(7);
+				continue;
+			}
+			
+			if (line.find(L"class_name") != std::string::npos) {
+				sc.name = line.substr(11);
+				continue;
+			}
+
+			if (line.find(L"#TAGS") != std::string::npos) {
+				extract_and_push_tags(line, sc.tags);
+				continue;
+			}
+
+			if (line.find(L"@export_category") != std::string::npos) {
+				sc.categories.emplace_back(script_class::export_category{ extract_category_name(line), {} });
+				continue;
+			}
+
+			if (line.find(L"#VAR") != std::string::npos) {
+				if (sc.categories.empty()) {
+					sc.categories.emplace_back(script_class::export_category{ {}, {} });
+				}
+				auto& cat = sc.categories.back();
+				auto var_desc = line.substr(5);
+
+				std::getline(in_, line);
+				if (line.find(L"@export var") == std::string::npos) {
+					return false;
+				}
+
+				auto v = extract_variable(line);
+				v.short_desc = var_desc;
+				cat.variables.emplace_back(v);
+				
+				continue;
+			}
+			
+			if (line.find(L"@export var") != std::string::npos) {
+				if (sc.categories.empty()) {
+					sc.categories.emplace_back(script_class::export_category{ {}, {} });
+				}
+				auto& cat = sc.categories.back();
+				cat.variables.emplace_back(extract_variable(line));
+				continue;
+			}
+
+			if (line.find(L"#FUNC") != std::string::npos) {
+				auto func_desc = line.substr(6);
+
+				std::getline(in_, line);
+				if (line.find(L"func") == std::string::npos) {
+					return false;
+				}
+				auto f = extract_function(line);
+				f.short_desc = func_desc;
+				sc.functions.emplace_back(f);
+				continue;
+			}
+
+			if (line[0] == 'f' && line[1] == 'u' && line[2] == 'n' && line[3] == 'c') {
+				sc.functions.emplace_back(extract_function(line));
+			}
+		}
+		file_->set_script_class(std::move(sc));
+		return true;
+	}
+
+	std::wstring script_parser::extract_category_name(const std::wstring& s) {
+		std::wstring res;
+		std::size_t start = s.find_first_of('"');
+		std::size_t stop = s.find_last_of('"');
+		return s.substr(start + 1, stop - start - 1);
+	}
+
+	void script_parser::extract_and_push_tags(const std::wstring& s, std::vector<std::wstring>& tags) {
+		std::wstring token;
+		for (std::size_t i = 6; i < s.size(); ++i) {
+			if (s[i] == ',') {
+				tags.emplace_back(token);
+				token.clear();
+				i += 1;
+				continue;
+			}
+
+			token += s[i];
+		}
+
+		tags.emplace_back(token);
+	}
+
+	script_class::variable script_parser::extract_variable(const std::wstring& s) {
+		std::wstring name, type;
+		std::size_t i;
+		for (i = 12; i < s.size() && s[i] != ':'; ++i) {
+			if (std::isblank(s[i]))
+				continue;
+			name += s[i];
+		}
+
+		for (i += 1; i < s.size() && s[i] != '='; ++i) {
+			if (std::isblank(s[i]))
+				continue;
+			type += s[i];
+		}
+
+		return {name, type, {}};
+	}
+
+	script_class::function script_parser::extract_function(const std::wstring& s) {
+		script_class::function res;
+
+		std::size_t i;
+		for (i = 5; i < s.size() && s[i] != '('; ++i) {
+			if (std::isblank(s[i]))
+				continue;
+
+			res.name += s[i];
+		}
+		
+		i = extract_and_push_function_arguments(s, i + 1, res.arguments);
+
+		for (; i < s.size() - 1; ++i) {
+			if (s[i] == '-' && s[i + 1] == '>') {
+				i += 2;
+				break;
+			}
+		}
+
+		for (; i < s.size() && s[i] != ':'; ++i) {
+			if (std::isspace(s[i]))
+				continue;
+
+			res.return_type += s[i];
+		}
+		if (res.return_type.empty())
+			res.return_type = L"void";
+		
+		return res;
+	}
+
+	std::size_t script_parser::extract_and_push_function_arguments(const std::wstring& s, std::size_t args_start,
+		std::vector<script_class::variable>& vars) {
+		std::size_t args_end = s.find(')', args_start);
+
+		std::vector<std::wstring> args;
+		util::split_by(s.substr(args_start, args_end - args_start), ',', args);
+		for (const auto& arg : args) {
+			std::size_t delim = arg.find(':');
+			if (delim == std::string::npos) {
+				vars.emplace_back(script_class::variable{arg, {}, {}});
+			}
+			else {
+				vars.emplace_back(script_class::variable{
+					arg.substr(0, delim),
+					arg.substr(delim + 1),
+					{}});
+			}
+		}
+		
+		return args_end + 1;
+	}
 } // docs_gen_core

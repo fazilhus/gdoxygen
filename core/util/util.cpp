@@ -21,5 +21,19 @@ namespace docs_gen_core::util {
 		                                                         buf.data());
 		return {buf.data(), buf.size()};
 	}
-	
+
+	void split_by(const std::wstring& s, wchar_t delim, std::vector<std::wstring>& elems) {
+		elems.clear();
+		std::wstring temp{};
+		for (auto c : s) {
+			if (c == delim) {
+				elems.push_back(temp);
+				temp.clear();
+			} else {
+				if (!std::isspace(c))
+					temp.push_back(c);
+			}
+		}
+		if (!temp.empty()) elems.push_back(temp);
+	}
 } // docs_gen_core::util
