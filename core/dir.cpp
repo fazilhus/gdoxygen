@@ -19,6 +19,8 @@ namespace docs_gen_core {
 	void dir::construct_file_tree() {
 		std::vector<std::shared_ptr<scene_file>> scene_files;
 		std::vector<std::shared_ptr<resource_file>> resource_files;
+
+		std::cout << "[INFO] Indexing all files in directory\n";
 		for (auto dir_entry = std::filesystem::recursive_directory_iterator(path_); dir_entry != std::filesystem::recursive_directory_iterator(); ++dir_entry) {
 			if (util::is_dir(*dir_entry) && util::is_dir_blacklisted(dir_entry->path().filename().wstring(), ignored_folders_)) {
 				dir_entry.disable_recursion_pending();
@@ -42,7 +44,9 @@ namespace docs_gen_core {
 				}
 			}
 		}
+		std::cout << "[INFO] Finished indexing all files in directory\n";
 
+		std::cout << "[INFO] Parsing scene files\n";
 		for (auto& val : scene_files) {
 			dott_parser p{ val };
 			if (!p.parse_scene_header())
@@ -56,7 +60,9 @@ namespace docs_gen_core {
 			if (!p.parse_scene_file_contents(file_tree_, script_files_, resource_files_))
 				return;
 		}
-		
+		std::cout << "[INFO] Finished parsing scene files\n";
+
+		std::cout << "[INFO] Parsing resource files\n";
 		for (auto& val : resource_files) {
 			dott_parser p{ val };
 			if (!p.parse_resource_header())
@@ -70,11 +76,14 @@ namespace docs_gen_core {
 			if (!p.parse_resource_file_contents(file_tree_, script_files_, resource_files_))
 				return;
 		}
+		std::cout << "[INFO] Finished parsing resource files\n";
 
+		std::cout << "[INFO] Parsing script files\n";
 		for (auto& [_, val] : script_files_) {
 			script_parser p{ val };
 			p.parse();
 		}
+		std::cout << "[INFO] Finished parsing script files\n";
 	}
 
 	void dir::gen_docs() {
@@ -85,7 +94,7 @@ namespace docs_gen_core {
 
 		std::filesystem::create_directory(docs_dir);
 
-		std::cout << "---- Writing scene files ----\n";
+		std::cout << "[INFO] Writing scene files\n";
 		for (const auto& [_, file] : file_tree_) {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
@@ -152,7 +161,7 @@ namespace docs_gen_core {
 			out.close();
 		}
 
-		std::cout << "---- Writing resource files ----\n";
+		std::cout << "[INFO] Writing resource files\n";
 		for (const auto& [_, file] : resource_files_) {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
@@ -196,7 +205,7 @@ namespace docs_gen_core {
 			out.close();
 		}
 
-		std::cout << "---- Writing script files ----\n";
+		std::cout << "[INFO] Writing script files\n";
 		for (const auto& [_, file] : script_files_) {
 			auto doc_path = file->get_path();
 			doc_path = std::filesystem::relative(doc_path, path_);
@@ -244,6 +253,9 @@ namespace docs_gen_core {
 				for (const auto& var : cat.variables) {
 					out.put('\t');
 					out.write(L"- ", 2);
+					if (var.name[0] == '_') {
+						out.put('\\');
+					}
 					out.write(var.name.data(), var.name.size());
 					out.write(L" : ", 3);
 					out.write(var.type.data(), var.type.size());
@@ -260,6 +272,9 @@ namespace docs_gen_core {
 			out.write(L"## Functions\n", 13);
 			for (const auto& func : sc.functions) {
 				out.write(L"- ", 2);
+				if (func.name[0] == '_') {
+					out.put('\\');
+				}
 				out.write(func.name.data(), func.name.size());
 				out.put('\n');
 
@@ -272,6 +287,9 @@ namespace docs_gen_core {
 				out.write(L"\tArguments\n", 11);
 				for (const auto& arg : func.arguments) {
 					out.write(L"\t- ", 3);
+					if (arg.name[0] == '_') {
+						out.put('\\');
+					}
 					out.write(arg.name.data(), arg.name.size());
 					out.write(L" : ", 3);
 					out.write(arg.type.data(), arg.type.size());

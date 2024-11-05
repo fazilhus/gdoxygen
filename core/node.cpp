@@ -76,7 +76,9 @@ namespace docs_gen_core {
     node_tree::iterator node_tree::insert(const std::wstring& name, const std::wstring& type, const std::wstring& parent) {
         if (parent.empty()) {
             if (root_ != nullptr) {
+#ifndef RELEASE
                 std::cerr << "[ERROR] Root node of the scene already exists\n";
+#endif
                 return end();
             }
 
